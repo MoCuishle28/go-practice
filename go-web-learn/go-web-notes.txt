@@ -201,3 +201,35 @@ JSON 操作：
 		  不然会让JSON编码进入死循环
 
 		3.指针在编码的时候会输出指针指向的内容，而空指针会输出null
+
+
+模板操作：
+	在Go语言中，我们使用 template 包来进行模板处理
+	使用类似Parse、ParseFile、Execute等方法从文件或者字符串加载模板，然后执行类似上面图片展示的模板的merge操作。
+	EX：
+		func handler(w http.ResponseWriter, r *http.Request) {
+			t := template.New("some template") 			//创建一个模板
+			t, _ = t.ParseFiles("tmpl/welcome.html")  	//解析模板文件
+			user := GetUser() 							//获取当前用户信息
+			t.Execute(w, user)  						//执行模板的merger操作
+		}
+
+	为了演示和测试代码的方便，在例子中采用如下格式的代码：（ ex：template-test.go ）
+
+		1.使用 Parse 代替 ParseFiles ，因为Parse可以直接测试一个字符串，而不需要额外的文件
+		2.不使用 handler 来写演示代码，而是每个测试一个main，方便测试
+		3.使用 os.Stdout 代替 http.ResponseWriter，因为 os.Stdout 实现了 io.Writer 接口
+
+	1. {{range}} 这个和Go语法里面的 range 类似，循环操作数据
+	2. {{with}} 操作是指当前对象的值，类似上下文的概念
+
+	if-else 用法很怪异... 	EX： template-test-range-with.go
+
+	嵌套模板：
+		{{define "子模板名称"}}
+			内容...
+		{{end}}
+
+		通过如下方式来调用：
+			{{template "子模板名称"}}
+
