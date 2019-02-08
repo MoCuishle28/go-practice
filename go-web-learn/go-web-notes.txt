@@ -64,3 +64,140 @@ go-sql-driver：
 			在 db.Prepare() 中可以看到传入的参数都是 =? 对应的数据，这样做的方式可以一定程度上防止SQL注入
 
 
+Go设置cookie：
+
+	Go中的 Cookie 对象：
+		type Cookie struct {
+			Name       string
+			Value      string
+			Path       string
+			Domain     string
+			Expires    time.Time
+			RawExpires string
+
+			// MaxAge=0表示未设置Max-Age属性
+		    // MaxAge<0表示立刻删除该cookie，等价于"Max-Age: 0"
+		    // MaxAge>0表示存在Max-Age属性，单位是秒
+			MaxAge   int
+
+			Secure   bool
+			HttpOnly bool
+			Raw      string
+			Unparsed []string // Raw text of unparsed attribute-value pairs
+		}
+
+	Go语言中通过net/http包中的SetCookie来设置：
+		http.SetCookie(w ResponseWriter, cookie *Cookie)
+
+	如何设置cookie
+	ex：
+		expiration := time.Now()
+		expiration = expiration.AddDate(1, 0, 0)
+		cookie := http.Cookie{Name: "username", Value: "astaxie", Expires: expiration}
+		http.SetCookie(w, &cookie)
+
+
+XML 操作：
+	通过xml包的 Unmarshal 函数来解析 XML：
+		func Unmarshal(data []byte, v interface{}) error
+
+	data 接收的是 XML 数据流，v 是需要输出的结构，定义为interface 也就是可以把XML转换为任意的格式
+	我们这里主要介绍 struct 的转换，因为 struct 和 XML 都有类似树结构的特征。
+
+	xml包 中提供了 Marshal 和 MarshalIndent 两个函数生成 xml
+	这两个函数主要的区别是第二个函数会增加前缀和缩进，函数的定义如下所示：
+
+		1.func Marshal(v interface{}) ([]byte, error)
+
+		2.func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error)
+
+	两个函数第一个参数是用来生成XML的结构定义类型数据，都是返回生成的XML数据流。
+
+
+JSON 操作：
+	通过 json 包的函数进行解析：
+		func Unmarshal(data []byte, v interface{}) error
+
+	例如JSON的key是Foo，那么怎么找对应的字段呢？
+
+		1.首先查找tag含有Foo的可导出的struct字段(首字母大写)
+		2.其次查找字段名是Foo的导出字段
+		3.最后查找类似FOO或者FoO这样的除了首字母之外其他大小写不敏感的导出字段
+
+	JSON解析的时候只会解析能找得到的字段，找不到的字段会被忽略，这样的一个好处是：
+		当你接收到一个很大的JSON数据结构而你却只想获取其中的部分数据的时候，
+		你只需将你想要的数据对应的字段名大写，即可轻松解决这个问题。
+
+	现在我们假设有如下的JSON数据：		EX：parser-json.go
+
+		b := []byte(`{"Name":"Wednesday","Age":6,"Parents":["Gomez","Morticia"]}`)
+		如果在我们不知道他的结构的情况下，我们把他解析到interface{}里面
+
+		var f interface{}
+		err := json.Unmarshal(b, &f)
+		这个时候f里面存储了一个map类型，他们的key是string，值存储在空的interface{}里
+
+		结构如下：
+			f = map[string]interface{}{
+				"Name": "Wednesday",
+				"Age":  6,
+				"Parents": []interface{}{
+					"Gomez",
+					"Morticia",
+				},
+			}
+
+	bitly公司开源了一个叫做simplejson的包,在处理未知结构体的JSON时相当方便，详细例子如下所示：
+		js, err := NewJson([]byte(`{
+			"test": {
+				"array": [1, "2", 3],
+				"int": 10,
+				"float": 5.150,
+				"bignum": 9223372036854775807,
+				"string": "simplejson",
+				"bool": true
+			}
+		}`))
+
+		arr, _ := js.Get("test").Get("array").Array()
+		i, _ := js.Get("test").Get("int").Int()
+		ms := js.Get("test").Get("string").MustString()
+
+		可以看到，使用这个库操作JSON比起官方包来说，简单的多,详细的请参考如下地址：
+			https://github.com/bitly/go-simplejson
+
+	生成 JSON 通过JSON包里面 Marshal 函数来处理：
+		func Marshal(v interface{}) ([]byte, error)
+
+	可以通过 struct tag 来定义，这样才可以使字段名为小写字母开头：
+
+		type Server struct {
+			ServerName string `json:"serverName"`
+			ServerIP   string `json:"serverIP"`
+		}
+
+		type Serverslice struct {
+			Servers []Server `json:"servers"`
+		}
+
+	针对JSON的输出，我们在定义 struct tag 的时候需要注意的几点是:
+
+		1.字段的tag是"-"，那么这个字段不会输出到JSON。
+
+		2.tag中带有自定义名称，那么这个自定义名称会出现在JSON的字段名中例如上面例子中serverName
+
+		3.tag中如果带有"omitempty"选项，那么如果该字段值为空，就不会输出到JSON串中
+
+		4.如果字段类型是bool, string, int, int64等，而tag中带有",string"选项
+		  那么这个字段在输出到JSON的时候会把该字段对应的值转换成JSON字符串
+
+
+	Marshal函数只有在转换成功的时候才会返回数据，在转换的过程中我们需要注意几点：
+
+		1.JSON对象只支持 string 作为 key，所以要编码一个map，
+		那么必须是 map[string]T 这种类型(T是Go语言中任意的类型)
+
+		2.Channel,complex和function是不能被编码成JSON的嵌套的数据是不能编码的，
+		  不然会让JSON编码进入死循环
+
+		3.指针在编码的时候会输出指针指向的内容，而空指针会输出null
