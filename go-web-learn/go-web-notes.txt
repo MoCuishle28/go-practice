@@ -233,3 +233,209 @@ JSON 操作：
 		通过如下方式来调用：
 			{{template "子模板名称"}}
 
+
+文件操作：
+	文件操作的大多数函数都是在os包里面，下面列举了几个目录操作的：
+
+		func Mkdir(name string, perm FileMode) error
+		创建名称为name的目录，权限设置是perm，例如0777
+
+		func MkdirAll(path string, perm FileMode) error
+		根据path创建多级子目录，例如astaxie/test1/test2。
+
+		func Remove(name string) error
+		删除名称为name的目录，当目录下有文件或者其他目录时会出错
+
+		func RemoveAll(path string) error
+		根据path删除多级子目录，如果path是单个名称，那么该目录下的子目录全部删除。
+
+	建立与打开文件
+		新建文件可以通过如下两个方法：
+
+			1.func Create(name string) (file *File, err Error)
+			根据提供的文件名创建新的文件，返回一个文件对象，默认权限是0666的文件，返回的文件对象是可读写的。
+
+			2.func NewFile(fd uintptr, name string) *File
+			根据文件描述符创建相应的文件，返回一个文件对象
+
+		通过如下两个方法来打开文件：
+
+			1.func Open(name string) (file *File, err Error)
+			该方法打开一个名称为name的文件，但是是只读方式，内部实现其实调用了OpenFile。
+
+			2.func OpenFile(name string, flag int, perm uint32) (file *File, err Error)
+			打开名称为name的文件，flag是打开的方式，只读、读写等，perm是权限
+
+	写文件
+		写文件函数：
+
+			1.func (file *File) Write(b []byte) (n int, err Error)
+			写入byte类型的信息到文件
+
+			2.func (file *File) WriteAt(b []byte, off int64) (n int, err Error)
+			在指定位置开始写入byte类型的信息
+
+			3.func (file *File) WriteString(s string) (ret int, err Error)
+			写入string信息到文件
+
+	读文件
+		读文件函数：
+
+			1.func (file *File) Read(b []byte) (n int, err Error)
+			读取数据到 b 中
+
+			2.func (file *File) ReadAt(b []byte, off int64) (n int, err Error)
+			从 off 开始读取数据到 b 中
+
+	删除文件：
+		Go语言里面删除文件和删除文件夹是同一个函数
+
+		func Remove(name string) Error
+		调用该函数就可以删除文件名为name的文件
+
+
+字符串处理：
+	下面这些函数来自于strings包：
+
+		1.func Contains(s, substr string) bool
+		  字符串s中是否包含substr，返回bool值
+
+		2.func Join(a []string, sep string) string
+		  字符串链接，把slice a通过sep链接起来
+		ex：
+			s := []string{"foo", "bar", "baz"}
+			fmt.Println(strings.Join(s, ", "))
+			//Output:foo, bar, baz		
+
+		3.func Index(s, sep string) int
+		  在字符串s中查找sep所在的位置，返回位置值，找不到返回-1
+		EX：
+			fmt.Println(strings.Index("chicken", "ken"))
+			fmt.Println(strings.Index("chicken", "dmr"))
+			//Output:4
+			//-1
+
+		4.func Repeat(s string, count int) string
+		  重复s字符串count次，最后返回重复的字符串
+		EX：
+			fmt.Println("ba" + strings.Repeat("na", 2))
+			//Output:banana
+
+		5.func Replace(s, old, new string, n int) string
+		  在s字符串中，把old字符串替换为new字符串，n表示替换的次数，小于0表示全部替换
+		EX:
+			fmt.Println(strings.Replace("oink oink oink", "k", "ky", 2))
+			fmt.Println(strings.Replace("oink oink oink", "oink", "moo", -1))
+			//Output:oinky oinky oink
+			//moo moo moo
+
+		6.func Split(s, sep string) []string
+		  把s字符串按照sep分割，返回slice
+		EX：
+			fmt.Printf("%q\n", strings.Split("a,b,c", ","))
+			fmt.Printf("%q\n", strings.Split("a man a plan a canal panama", "a "))
+			fmt.Printf("%q\n", strings.Split(" xyz ", ""))
+			fmt.Printf("%q\n", strings.Split("", "Bernardo O'Higgins"))
+			//Output:["a" "b" "c"]
+			//["" "man " "plan " "canal panama"]
+			//[" " "x" "y" "z" " "]
+			//[""]
+
+		7.func Trim(s string, cutset string) string
+		  在s字符串的头部和尾部去除cutset指定的字符串
+		EX：
+			fmt.Printf("[%q]", strings.Trim(" !!! Achtung !!! ", "! "))
+			//Output:["Achtung"]
+			func Fields(s string) []string
+
+		8.去除s字符串的空格符，并且按照空格分割返回slice
+		EX：
+			fmt.Printf("Fields are: %q", strings.Fields("  foo bar  baz   "))
+			//Output:Fields are: ["foo" "bar" "baz"]
+
+
+	1.Append 系列函数将整数等转换为字符串后，添加到现有的字节数组中。
+
+	2.Format 系列函数把其他类型的转换为字符串
+
+	3.Parse 系列函数把字符串转换为其他类型
+
+
+Socket编程：
+	在Go的net包中定义了很多类型、函数和方法用来网络编程，其中IP的定义如下：
+		type IP []byte
+
+		ParseIP(s string) IP 函数会把一个 IPv4 或者 IPv6 的地址转化成 IP 类型
+
+	与服务器建立连接的过程：	(EX： http-test.go)
+
+		在Go语言的net包中有一个类型TCPConn
+		这个类型可以用来作为客户端和服务器端交互的通道，他有两个主要的函数：
+
+			1.func (c *TCPConn) Write(b []byte) (int, error)
+			2.func (c *TCPConn) Read(b []byte) (int, error)
+
+			TCPConn可以用在客户端和服务器端来读写数据。
+
+		还有我们需要知道一个TCPAddr类型，他表示一个TCP的地址信息，他的定义如下：
+
+			type TCPAddr struct {
+				IP IP
+				Port int
+				Zone string // IPv6 scoped addressing zone
+			}
+
+		在Go语言中通过ResolveTCPAddr获取一个 TCPAddr
+
+			func ResolveTCPAddr(net, addr string) (*TCPAddr, os.Error)
+
+			1.net参数是"tcp4"、"tcp6"、"tcp"中的任意一个
+			  分别表示TCP(IPv4-only), TCP(IPv6-only)或者TCP(IPv4, IPv6的任意一个)。
+
+			2.addr表示域名或者IP地址，例如"www.google.com:80" 或者"127.0.0.1:22"。
+
+
+		Go语言中通过net包中的DialTCP函数来建立一个TCP连接，并返回一个 TCPConn 类型的对象。
+
+		建立连接的函数定义如下：
+
+			func DialTCP(network string, laddr, raddr *TCPAddr) (*TCPConn, error)
+
+			network参数是"tcp4"、"tcp6"、"tcp"中的任意一个
+			分别表示TCP(IPv4-only)、TCP(IPv6-only)或者TCP(IPv4,IPv6的任意一个)
+
+			laddr表示本机地址，一般设置为nil	（本机的一般由系统自动分配吧）
+			raddr表示远程的服务地址
+
+	服务器端代码：
+		在服务器端我们需要绑定服务到指定的非激活端口，并监听此端口
+		当有客户端请求到达的时候可以接收到来自客户端连接的请求。
+		net包中有相应功能的函数，函数定义如下：
+
+			func ListenTCP(network string, laddr *TCPAddr) (*TCPListener, error)
+			func (l *TCPListener) Accept() (Conn, error)
+
+
+	func (c *TCPConn) SetKeepAlive(keepalive bool) os.Error
+
+	设置keepAlive属性，是操作系统层在tcp上没有数据和ACK的时候，会间隔性的发送keepalive包
+	操作系统可以通过该包来判断一个tcp连接是否已经断开
+	在windows上默认2个小时没有收到数据和keepalive包的时候人为tcp连接已经断开
+	这个功能和我们通常在应用层加的心跳包的功能类似。
+
+
+	UDP Socket：
+		Go语言包中处理UDP Socket和TCP Socket不同的地方是
+		在服务器端处理多个客户端请求数据包的方式不同,UDP缺少了对客户端连接请求的Accept函数
+
+		UDP的几个主要函数如下所示：
+
+			1.func ResolveUDPAddr(net, addr string) (*UDPAddr, os.Error)
+
+			2.func DialUDP(net string, laddr, raddr *UDPAddr) (c *UDPConn, err os.Error)
+
+			3.func ListenUDP(net string, laddr *UDPAddr) (c *UDPConn, err os.Error)
+
+			4.func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err os.Error)
+			
+			5.func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err os.Error)
