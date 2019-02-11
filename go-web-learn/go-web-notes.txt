@@ -135,7 +135,7 @@ JSON 操作：
 
 		var f interface{}
 		err := json.Unmarshal(b, &f)
-		这个时候f里面存储了一个map类型，他们的key是string，值存储在空的interface{}里
+		这个时候f里面存储了一个 map 类型，他们的key是string，值存储在空的interface{}里
 
 		结构如下：
 			f = map[string]interface{}{
