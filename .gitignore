@@ -1,3 +1,2 @@
 # ignore .exe file
 *.exe
-*.css linguist-language=go
