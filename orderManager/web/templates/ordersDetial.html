@@ -1,0 +1,41 @@
+{{template "header"}}
+
+{{define "ordersDetial"}}
+<!-- table-responsive响应式表格 内容放不下时会允许拖 -->
+<div class="table-responsive">
+	<!-- 表格 class="table" table-bordered加上边框 table-striped加上隔行变色 table-hover鼠标悬停效果 -->
+	<table class="table table-bordered table-striped table-hover">
+		<thead>
+			<tr>
+				<th>DID</th>
+				<th>菜名</th>
+				<th>类型</th>
+				<th>单价</th>
+				<th>数量</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{{range .Detial_order_list}}
+				{{if ne .Did ""}}
+					<tr>
+						<td>{{.Did}}</td>
+						<td>{{.Name}}</td>
+						<td>{{.Type_name}}</td>
+						<td>{{.Price}}</td>
+						<td>{{.Num}}</td>
+						<td>
+							<button class="btn btn-danger">删除</button>
+						</td>
+					</tr>
+				{{end}}
+			{{end}}
+		</tbody>
+	</table>
+</div>
+
+
+</body>
+</html>
+{{end}}

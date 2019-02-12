@@ -2,9 +2,57 @@
 
 {{define "index"}}
 
-<div>
-	<h1 align="center">内容</h1>	
+<!-- table-responsive响应式表格 内容放不下时会允许拖 -->
+<div class="table-responsive">
+	<!-- 表格 class="table" table-bordered加上边框 table-striped加上隔行变色 table-hover鼠标悬停效果 -->
+	<table class="table table-bordered table-striped table-hover">
+		<thead>
+			<tr>
+				<th>OID</th>
+				<th>UID</th>
+				<th>价钱</th>
+				<th>订单情况</th>
+				<th>时间</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{{range .Orders_list}}
+				{{if ne .Oid ""}}
+					<tr>
+						<td>{{.Oid}}</td>
+						<td>{{.Uid}}</td>
+						<td>{{.Final_cost}}</td>
+
+						{{if eq .Finished "0"}}
+							<td>未送达</td>
+						{{else if eq .Finished "2"}}
+							<td>已撤销</td>
+						{{else}}
+							<td>已送达</td>
+						{{end}}
+
+						<td>{{.Created_time}}</td>
+						<td>
+							{{if ne .Finished "2"}}
+								<button class="btn btn-default" onclick="window.location.href = 'http://127.0.0.1:9090/ordersdetial?oid='+{{.Oid}}">
+									详情
+								</button>
+								<button class="btn btn-primary">完成</button>
+								<button class="btn btn-danger">撤销</button>
+							{{else}}
+								已撤销订单
+								<button class="btn btn-default">详情</button>
+							{{end}}
+						</td>
+					</tr>
+				{{end}}
+			{{end}}
+		</tbody>
+	</table>
 </div>
+
 
 </body>
 </html>

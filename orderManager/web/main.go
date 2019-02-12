@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "fmt"
 	"log"
 
 	// 服务器端编程
@@ -13,12 +12,10 @@ import (
 
 	// service 包
 	"Go-practice/orderManager/service"
+	"Go-practice/orderManager/dao"
+	"Go-practice/orderManager/entity"
 )
 
-// 用于渲染登录页模板的信息
-type LoginMsg struct {
-	Msg string
-}
 
 // root 用户登录标志
 type Root struct {
@@ -26,10 +23,24 @@ type Root struct {
 	lock sync.Mutex
 }
 
+// 以下为模板渲染内容
+// 用于渲染登录页模板的信息
+type LoginMsg struct {
+	Msg string
+}
+
 // header
 type Header struct {
 	Username string
 	Index string
+}
+
+type Index struct {
+	Orders_list *[]entity.Orders
+}
+
+type DetialOrder struct {
+	Detial_order_list *[]entity.Detial_order
 }
 
 
@@ -48,6 +59,7 @@ func main() {
 
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/index", index)
+	http.HandleFunc("/ordersdetial", ordersDetial)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -62,10 +74,34 @@ func index(w http.ResponseWriter, r *http.Request) {
 		login(w, r)
 		return
 	}
+
+	orders_list := dao.QueryOrders()
+
 	t, _ := template.ParseFiles("templates/index.html", "templates/header.html")
 	header := Header{Username:root.username, Index:"0"}
+	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
-	t.ExecuteTemplate(w, "index", nil)
+	t.ExecuteTemplate(w, "index", index)
+}
+
+
+func ordersDetial(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	r.ParseForm()
+	oid := r.Form.Get("oid")
+	detial_order_list := dao.QueryOrdersDetial(oid)
+
+	t, _ := template.ParseFiles("templates/ordersDetial.html", "templates/header.html")
+	header := Header{Username:root.username, Index:"0"}
+	detial_order := DetialOrder{Detial_order_list:detial_order_list}
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "ordersDetial", detial_order)
 }
 
 
