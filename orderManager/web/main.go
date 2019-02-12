@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
 	"log"
 
 	// 服务器端编程
@@ -10,41 +10,44 @@ import (
 
 	// util
 	"sync"
-	"strings"
 
-	// 用于文件操作
-	"os"
-	"encoding/json"
-	"io/ioutil"
+	// service 包
+	"Go-practice/orderManager/service"
 )
 
-type RootLogin struct {
-	Username string
-	Password string
+// 用于渲染登录页模板的信息
+type LoginMsg struct {
+	Msg string
 }
 
+// root 用户登录标志
 type Root struct {
-	username string
+	username string  // 未登录时为 "null" 登录后为用户名
 	lock sync.Mutex
 }
 
+// header
+type Header struct {
+	Username string
+	Index string
+}
 
-var root *Root
-var not_filter_url map[string]bool
+
+var root *Root 			// root 用户登录标志
 
 
 func init() {
 	root = &Root{username:"null"}
-	not_filter_url = make(map[string]bool)
-	not_filter_url["favicon.ico"] = true
-	not_filter_url["login"] = true
 }
 
 
 // 主函数
 func main() {
-	http.HandleFunc("/", filter)
+	// 不启动静态文件服务就无法加载 css
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static")))) // 启动静态文件服务
+
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/index", index)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -52,66 +55,48 @@ func main() {
 }
 
 
-func filter(w http.ResponseWriter, r *http.Request) {
-	if r.URL.String() == "/" {
-		// 直接返回登录页面
+func index(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
 		login(w, r)
 		return
 	}
-	root.lock.Lock()
-	defer root.lock.Unlock()
-
-	url := strings.Split(r.URL.String(), "/")
-	// 不在不拦截名单的url就要判断是否已经登录
-	if _,ok := not_filter_url[url[1]]; !ok {
-		if root.username == "null" {
-			fmt.Println("未登录 Root...")
-			return
-		}
-	}
-	fmt.Println("当前访问用户：", root.username)
+	t, _ := template.ParseFiles("templates/index.html", "templates/header.html")
+	header := Header{Username:root.username, Index:"0"}
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "index", nil)
 }
 
 
 func login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	if r.Method == "GET" {
-		t, _ := template.ParseFiles("login.html")
+		t, _ := template.ParseFiles("templates/login.html")
 		t.Execute(w, nil)
-	} else {	// POST 把业务逻辑分离好点吧 TODO
+	} else {	// POST
 		username := r.Form.Get("username")
 		pwd := r.Form.Get("pwd")
 
-		var root_login RootLogin
-		file, err := os.Open("root.json")
-		if err != nil {
-			return
-		}
-		defer file.Close()
-
-		data, err := ioutil.ReadAll(file)
-		if err != nil {
-			return
-		}
-
-		json.Unmarshal(data, &root_login)
-		root_name := root_login.Username
-		root_pwd := root_login.Password
-
-    	if root_name == username {
-    		if root_pwd == pwd {
-    			// TODO 成功登录
-    			fmt.Println("success")
-    			root.lock.Lock()
-    			root.username = root_name
+		msg := LoginMsg{}
+		ret := service.ValidLogin(username, pwd)
+		switch(ret){
+			case -1:
+				msg.Msg = "其他错误!"
+			case 1:
+				root.lock.Lock()
+				root.username = username
     			root.lock.Unlock()
-    		} else {
-    			// 密码错误
-    			fmt.Println("pwd Error")
-    		}
-    	} else {
-			// 用户名错误
-			fmt.Println("name Error")
-    	}
+    			index(w, r)
+    			return
+			case 2:
+				msg.Msg = "用户名错误!"
+			case 3:
+				msg.Msg = "密码错误!"
+			default:
+				msg.Msg = "异常!"
+		}
+    	t, _ := template.ParseFiles("templates/login.html")
+		t.Execute(w, msg)
 	}
 }
