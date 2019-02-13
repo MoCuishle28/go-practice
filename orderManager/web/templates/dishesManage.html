@@ -1,0 +1,49 @@
+{{template "header"}}
+
+{{define "dishesManage"}}
+
+<div>
+	<p><a href="#">添加菜品</a></p>
+</div>
+
+<!-- table-responsive响应式表格 内容放不下时会允许拖 -->
+<div class="table-responsive">
+	<!-- 表格 class="table" table-bordered加上边框 table-striped加上隔行变色 table-hover鼠标悬停效果 -->
+	<table class="table table-bordered table-striped table-hover">
+		<thead>
+			<tr>
+				<th>DID</th>
+				<th>菜名</th>
+				<th>类型</th>
+				<th>单价</th>
+				<th>情况</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{{range .Dishes_list}}
+				{{if ne .Did ""}}
+					<tr>
+						<td>{{.Did}}</td>
+						<td>{{.Name}}</td>
+						<td>{{.Type_name}}</td>
+						<td>{{.Price}}</td>
+						<td>{{.Status}}</td>
+						<td>
+							<button class="btn btn-default">修改</button>
+							<button class="btn btn-primary">上架</button>
+							<button class="btn btn-danger">下架</button>
+						</td>
+					</tr>
+				{{end}}
+			{{end}}
+		</tbody>
+	</table>
+</div>
+
+
+</body>
+</html>
+
+{{end}}

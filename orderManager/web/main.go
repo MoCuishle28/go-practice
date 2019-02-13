@@ -43,6 +43,10 @@ type DetialOrder struct {
 	Detial_order_list *[]entity.Detial_order
 }
 
+type DishManage struct {
+	Dishes_list *[]entity.Dishes
+}
+
 
 var root *Root 			// root 用户登录标志
 
@@ -60,6 +64,8 @@ func main() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/index", index)
 	http.HandleFunc("/ordersdetial", ordersDetial)
+	http.HandleFunc("/dishmanage", dishManage)
+	http.HandleFunc("/ordermanage", orderManage)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -67,7 +73,45 @@ func main() {
 }
 
 
+// 当前订单页
 func index(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	orders_list := dao.QueryCurrentOrders()
+
+	t, _ := template.ParseFiles("templates/index.html", "templates/header.html")
+	header := Header{Username:root.username, Index:"0"}
+	index := Index{Orders_list:orders_list}
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "index", index)
+}
+
+
+// 菜品管理页
+func dishManage(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	dishes_list := dao.QueryDsihes()
+	t, _ := template.ParseFiles("templates/dishesManage.html", "templates/header.html")
+	header := Header{Username:root.username, Index:"2"}
+	dish_manage := DishManage{Dishes_list:dishes_list}
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "dishesManage", dish_manage)
+}
+
+
+// 订单管理
+func orderManage(w http.ResponseWriter, r *http.Request) {
 	root.lock.Lock()
 	defer root.lock.Unlock()
 	if root.username == "null" {
@@ -78,13 +122,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 	orders_list := dao.QueryOrders()
 
 	t, _ := template.ParseFiles("templates/index.html", "templates/header.html")
-	header := Header{Username:root.username, Index:"0"}
+	header := Header{Username:root.username, Index:"3"}
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
 }
 
 
+// 订单详情页 GET 请求带参数 ?oid=...
 func ordersDetial(w http.ResponseWriter, r *http.Request) {
 	root.lock.Lock()
 	defer root.lock.Unlock()
@@ -105,6 +150,7 @@ func ordersDetial(w http.ResponseWriter, r *http.Request) {
 }
 
 
+// 登录页
 func login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	if r.Method == "GET" {
