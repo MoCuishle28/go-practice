@@ -41,10 +41,16 @@ type Index struct {
 
 type DetialOrder struct {
 	Detial_order_list *[]entity.Detial_order
+	Status string
 }
 
 type DishManage struct {
 	Dishes_list *[]entity.Dishes
+}
+
+type ActivityManage struct {
+	Dish_activity_list *[]entity.Dish_activity
+	Order_activity_list *[]entity.Order_activity
 }
 
 
@@ -66,6 +72,10 @@ func main() {
 	http.HandleFunc("/ordersdetial", ordersDetial)
 	http.HandleFunc("/dishmanage", dishManage)
 	http.HandleFunc("/ordermanage", orderManage)
+	http.HandleFunc("/activity", activity)
+	http.HandleFunc("/finishorder", finishOrder)
+	http.HandleFunc("/cancelorder", cancelOrder)
+	http.HandleFunc("/deletedishesorders", deleteDish_and_Order)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -89,6 +99,80 @@ func index(w http.ResponseWriter, r *http.Request) {
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
+}
+
+
+// 删除订单内的菜品
+func deleteDish_and_Order(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+	// 删除菜品 订单金额要跟着变 TODO
+}
+
+
+// 完成订单
+func finishOrder(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	r.ParseForm()
+	oid := r.Form.Get("oid")
+	order := entity.Orders{Oid:oid, Finished:"1"}
+	affect := dao.UpdateOrder(&order)
+	if affect == -1 {
+		log.Println("修改失败")
+	} else {
+		http.Redirect(w, r, "/index", http.StatusFound)
+	}
+}
+
+
+// 撤销订单
+func cancelOrder(w http.ResponseWriter, r *http.Request){
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	r.ParseForm()
+	oid := r.Form.Get("oid")
+	order := entity.Orders{Oid:oid, Finished:"2"}
+	affect := dao.UpdateOrder(&order)
+	if affect == -1 {
+		log.Println("修改失败")
+	} else {
+		http.Redirect(w, r, "/index", http.StatusFound)
+	}
+}
+
+
+// 优惠活动管理页
+func activity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	dish_activity_list := dao.QueryDishActivity()
+	order_activity_list := dao.QueryOrderActivity()
+	header := Header{Username:root.username, Index:"1"}
+	activity := ActivityManage{Dish_activity_list:dish_activity_list, Order_activity_list:order_activity_list}
+
+	t, _ := template.ParseFiles("templates/activityManage.html", "templates/header.html")
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "activity", activity)
 }
 
 
@@ -141,10 +225,11 @@ func ordersDetial(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	oid := r.Form.Get("oid")
 	detial_order_list := dao.QueryOrdersDetial(oid)
+	order := dao.QueryOrderByOid(oid)
 
 	t, _ := template.ParseFiles("templates/ordersDetial.html", "templates/header.html")
 	header := Header{Username:root.username, Index:"0"}
-	detial_order := DetialOrder{Detial_order_list:detial_order_list}
+	detial_order := DetialOrder{ Detial_order_list:detial_order_list, Status:order.Finished }
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "ordersDetial", detial_order)
 }

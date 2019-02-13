@@ -35,15 +35,21 @@
 
 						<td>{{.Created_time}}</td>
 						<td>
-							{{if ne .Finished "2"}}
+							{{if eq .Finished "0"}}
 								<button class="btn btn-default" onclick="window.location.href = 'http://127.0.0.1:9090/ordersdetial?oid='+{{.Oid}}">
 									详情
 								</button>
-								<button class="btn btn-primary">完成</button>
-								<button class="btn btn-danger">撤销</button>
+
+								<button class="btn btn-primary" onclick="window.location.href='http://127.0.0.1:9090/finishorder?oid='+{{.Oid}}">
+									完成
+								</button>
+								<button class="btn btn-danger" onclick="window.location.href='http://127.0.0.1:9090/cancelorder?oid='+{{.Oid}}">
+									撤销
+								</button>
 							{{else}}
-								已撤销订单
-								<button class="btn btn-default">详情</button>
+								<button class="btn btn-default" onclick="window.location.href = 'http://127.0.0.1:9090/ordersdetial?oid='+{{.Oid}}">
+									详情
+								</button>
 							{{end}}
 						</td>
 					</tr>

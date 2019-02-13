@@ -17,6 +17,7 @@
 		</thead>
 
 		<tbody>
+			{{$status := .Status}}
 			{{range .Detial_order_list}}
 				{{if ne .Did ""}}
 					<tr>
@@ -26,7 +27,15 @@
 						<td>{{.Price}}</td>
 						<td>{{.Num}}</td>
 						<td>
-							<button class="btn btn-danger">删除</button>
+							{{if eq $status "0"}}
+								<button class="btn btn-danger" 
+								onclick="window.location.href = 
+								'http://127.0.0.1:9090/deletedishesorders?did='+{{.Did}}+'&did='+{{.Did}}">
+									删除
+								</button>
+							{{else}}
+								<p>已完成/已撤销</p>
+							{{end}}
 						</td>
 					</tr>
 				{{end}}
