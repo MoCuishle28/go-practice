@@ -4,7 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"Go-practice/orderManager/entity"
-	"Go-practice/orderManager/util"
+	// "Go-practice/orderManager/util"  // 有循环导入
 	"log"
 	"strings"
 )
@@ -14,6 +14,22 @@ func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+
+// 删除字符串切片的零值
+func removeZero(slice []string) []string{
+    if len(slice) == 0 {
+        return slice
+    }
+    for i, v := range slice {
+        if v == "" {
+            slice = append(slice[:i], slice[i+1:]...)
+            return removeZero(slice)
+            break
+        }
+    }
+    return slice
 }
 
 
@@ -73,9 +89,11 @@ func UpdateOrder(order *entity.Orders) int64 {
 		set_arr = append(set_arr, "uid="+order.Uid)
 	}
 
-	set_arr = util.RemoveZero(set_arr)
+	set_arr = removeZero(set_arr)
 	sql += strings.Join(set_arr, ",")
 	sql += " where oid = ?"
+
+	log.Println("SQL: ", sql)
 
 	stmt, err := db.Prepare(sql)
 	checkErr(err)

@@ -10,7 +10,7 @@ import (
 	// util
 	"sync"
 
-	// service 包
+	// 自定义 包
 	"Go-practice/orderManager/service"
 	"Go-practice/orderManager/dao"
 	"Go-practice/orderManager/entity"
@@ -75,7 +75,7 @@ func main() {
 	http.HandleFunc("/activity", activity)
 	http.HandleFunc("/finishorder", finishOrder)
 	http.HandleFunc("/cancelorder", cancelOrder)
-	http.HandleFunc("/deletedishesorders", deleteDish_and_Order)
+	http.HandleFunc("/minusdishesorders", minusDish_in_Order)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -103,14 +103,22 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 
 // 删除订单内的菜品
-func deleteDish_and_Order(w http.ResponseWriter, r *http.Request) {
+func minusDish_in_Order(w http.ResponseWriter, r *http.Request) {
 	root.lock.Lock()
 	defer root.lock.Unlock()
 	if root.username == "null" {
 		login(w, r)
 		return
 	}
-	// 删除菜品 订单金额要跟着变 TODO
+
+	r.ParseForm()
+	oid := r.Form.Get("oid")
+	did := r.Form.Get("did")
+
+	ret_status := service.MinusDish_in_Order(oid, did)
+	log.Println("status", ret_status)
+
+	http.Redirect(w, r, "/ordersdetial?oid="+oid, http.StatusFound)
 }
 
 
