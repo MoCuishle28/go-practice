@@ -4,7 +4,82 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"Go-practice/orderManager/entity"
+	"log"
+	"strings"
 )
+
+
+func InsertDish(dish entity.Dishes) int64 {
+	// insert into dishes(did,name,price,type_id,status) values(,'','','','')
+	if dish.Name == "" || dish.Price=="" || dish.Type_id=="" || dish.Status=="" {
+		log.Println("菜品信息未填写完整")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql := "insert into dishes(name,price,type_id,status) values(?,?,?,?)"
+
+	stmt, err := db.Prepare(sql)
+	checkErr(err)
+
+	res, err := stmt.Exec(dish.Name,dish.Price,dish.Type_id,dish.Status)
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
+
+
+func UpdateDish(dish entity.Dishes) int64 {
+	// update dishes set price='1' where did=?
+	if dish.Did == "" {
+		log.Println("缺少DID")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql := "update dishes set "
+	set_arr := make([]string, 5)
+
+	if dish.Name != "" {
+		set_arr = append(set_arr, "name='"+dish.Name+"'")
+	}
+	if dish.Price != "" {
+		set_arr = append(set_arr, "price='"+dish.Price+"'")
+	}
+	if dish.Img.Valid != false {
+		set_arr = append(set_arr, "img='"+dish.Img.String+"'")
+	}
+	if dish.Type_id != "" {
+		set_arr = append(set_arr, "type_id="+dish.Type_id)
+	}
+	if dish.Status != "" {
+		set_arr = append(set_arr, "status='"+dish.Status+"'")
+	}
+
+	set_arr = removeZero(set_arr)
+	sql += strings.Join(set_arr, ",")
+	sql += " where did = ?"
+
+	log.Println("SQL: ", sql)
+
+	stmt, err := db.Prepare(sql)
+	checkErr(err)
+
+	res, err := stmt.Exec(dish.Did)
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
 
 
 func QueryDishByDid(did string) entity.Dishes {
@@ -20,10 +95,10 @@ func QueryDishByDid(did string) entity.Dishes {
 	var type_id string
 	var status string
 
-	err = row.Scan(&did, &name, &price, &img, &type_id, &status)
-	checkErr(err)
+	_ = row.Scan(&did, &name, &price, &img, &type_id, &status)
 
 	dish := entity.Dishes{Did:did, Name:name, Price:price, Img:img, Type_id:type_id, Status:status}
+	log.Println(dish)
 	return dish
 }
 

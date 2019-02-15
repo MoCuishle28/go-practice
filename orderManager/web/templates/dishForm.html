@@ -1,0 +1,90 @@
+{{template "header"}}
+
+{{define "dishForm"}}
+
+<div align="center">
+	{{if ne .Dish.Did ""}}
+		<form method="post" action="/uploadfile" enctype="multipart/form-data">
+			<div class="form-group">
+				<label>
+					Did<input type="text" name="did" readonly = "readonly" value="{{.Dish.Did}}">
+				</label>
+		    	<label for="file">上传图片</label>
+		    	<input type="file" id="file" name="file">
+		    	<p class="help-block">上传菜品图片。</p>
+			</div>
+			<div align="center">
+				<button type="submit" class="btn btn-primary">上传图片</button>
+			</div>
+		</form>
+	{{end}}
+
+	<br>
+
+	<form method="post" action="/dishform">
+		<input type="hidden" name="add" value="{{.Add}}">
+		<table class="table table-bordered table-striped table-hover">
+			{{if ne .Dish.Did ""}}
+				<tr>
+					<td>ID:</td>
+					<!-- did不可修改 -->
+					<td>
+						<input type="text" name="did" readonly = "readonly" value="{{.Dish.Did}}">
+					</td>
+				</tr>
+			{{end}}
+
+			<tr>
+				<td>菜名:</td>
+				<td><input type="text" name="name" value="{{.Dish.Name}}"></td>
+			</tr>
+			<tr>
+				<td>价格:</td>
+				<td><input type="text" name="price" value="{{.Dish.Price}}"></td>
+			</tr>
+			<tr>
+				<td>状态:</td>
+				<td>
+					<select name="status">
+						{{if eq .Dish.Status "下架"}}
+							<option value="上架">上架</option>
+							<option value="下架" selected="selected">下架</option>
+						{{else}}
+							<option value="上架" selected="selected">上架</option>
+							<option value="下架">下架</option>
+						{{end}}
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>类型:</td>
+				<td>
+					<select name="type_id">
+						<!-- 用循环 -->
+						{{$id := .Dish.Type_id}}
+						{{range .Types}}
+							{{if ne .Tid ""}}
+								{{if eq .Tid $id}}
+									<option value="{{.Tid}}" selected="selected">
+										{{.Type_name}}
+									</option>
+								{{else}}
+									<option value="{{.Tid}}">
+										{{.Type_name}}
+									</option>
+								{{end}}
+							{{end}}
+						{{end}}
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="center" colspan="2">
+			  		<button type="submit" class="btn btn-primary">提交</button>
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+
+{{end}}

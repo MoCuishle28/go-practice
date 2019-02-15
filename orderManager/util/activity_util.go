@@ -24,7 +24,7 @@ func ChooseDishActivity(order *entity.Orders, dishes_orders_list *[]entity.Dishe
             	discount, _ := strconv.ParseFloat(activity.Discount.String, 64)
                 tmp_cost = (price * discount) + (price * float64(dish.Num - 1))
             } else {
-                // TODO 这里似乎有 BUG (2*牛肉串,2*羊肉串,2*百合酱蒸凤爪 百合减一时出错)
+                // 这里似乎有 BUG (2*牛肉串,2*羊肉串,2*百合酱蒸凤爪 百合减一时出错) sum:45.6,36
             	minus_price, _ := strconv.ParseFloat(activity.Minus_price.String, 64)
                 tmp_cost = (price - minus_price) * float64(dish.Num)
             }

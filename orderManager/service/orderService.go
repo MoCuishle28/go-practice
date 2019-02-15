@@ -60,7 +60,7 @@ func MinusDish_in_Order(oid, did string) int64 {
 
 	log.Println(order)
 
-	affect = dao.UpdateOrder(&order)
+	affect = dao.UpdateOrder(&order)	// 订单没菜时也不能删 后面应该还能随时加
 	if affect == -1 {
 		return ret_map["error"]
 	}

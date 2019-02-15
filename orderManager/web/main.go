@@ -53,6 +53,12 @@ type ActivityManage struct {
 	Order_activity_list *[]entity.Order_activity
 }
 
+type DishFrom struct {
+	Dish *entity.Dishes
+	Types *[]entity.Type
+	Add string
+}
+
 
 var root *Root 			// root 用户登录标志
 
@@ -76,6 +82,8 @@ func main() {
 	http.HandleFunc("/finishorder", finishOrder)
 	http.HandleFunc("/cancelorder", cancelOrder)
 	http.HandleFunc("/minusdishesorders", minusDish_in_Order)
+	http.HandleFunc("/dishform", dishForm)
+	http.HandleFunc("/uploadfile", uploadFile)
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -99,6 +107,55 @@ func index(w http.ResponseWriter, r *http.Request) {
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
+}
+
+
+func uploadFile(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		// TODO 处理文件上传
+	}
+}
+
+
+func dishForm(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	r.ParseForm()
+	if r.Method == "GET" {
+		did := r.Form.Get("did")
+		dish := dao.QueryDishByDid(did)
+		types := dao.QueryType()
+
+		header := Header{Username:root.username, Index:"2"}
+		dishForm := DishFrom{Dish:&dish, Types:types}
+
+		t, _ := template.ParseFiles("templates/dishForm.html", "templates/header.html")
+		t.ExecuteTemplate(w, "header", header)
+		t.ExecuteTemplate(w, "dishForm", dishForm)
+	} else {
+		did := r.Form.Get("did")
+		name := r.Form.Get("name")
+		price := r.Form.Get("price")
+		type_id := r.Form.Get("type_id")
+		status := r.Form.Get("status")
+		dish := entity.Dishes{Did:did, Name:name, Price:price, Type_id:type_id, Status:status}
+
+		log.Println("post dish:", dish)
+
+		var affect int64 = -1
+		if did == "" {
+			affect = dao.InsertDish(dish)
+		} else {
+			affect = dao.UpdateDish(dish)
+		}
+		log.Println("affect:", affect)
+		http.Redirect(w, r, "/dishmanage", http.StatusFound)
+	}
 }
 
 
