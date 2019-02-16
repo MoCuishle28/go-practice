@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
+	"io"
+	"time"
 
 	// 服务器端编程
 	"html/template"
@@ -83,7 +86,7 @@ func main() {
 	http.HandleFunc("/cancelorder", cancelOrder)
 	http.HandleFunc("/minusdishesorders", minusDish_in_Order)
 	http.HandleFunc("/dishform", dishForm)
-	http.HandleFunc("/uploadfile", uploadFile)
+
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -110,13 +113,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func uploadFile(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		// TODO 处理文件上传
-	}
-}
-
-
+// 添加 or 修改 菜品信息
 func dishForm(w http.ResponseWriter, r *http.Request) {
 	root.lock.Lock()
 	defer root.lock.Unlock()
@@ -125,8 +122,8 @@ func dishForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
 	if r.Method == "GET" {
+		r.ParseForm()
 		did := r.Form.Get("did")
 		dish := dao.QueryDishByDid(did)
 		types := dao.QueryType()
@@ -138,14 +135,32 @@ func dishForm(w http.ResponseWriter, r *http.Request) {
 		t.ExecuteTemplate(w, "header", header)
 		t.ExecuteTemplate(w, "dishForm", dishForm)
 	} else {
-		did := r.Form.Get("did")
-		name := r.Form.Get("name")
-		price := r.Form.Get("price")
-		type_id := r.Form.Get("type_id")
-		status := r.Form.Get("status")
+		r.ParseMultipartForm(32 << 20)	// 把上传的文件存储在内存和临时文件中
+
+		did := r.FormValue("did")
+		name := r.FormValue("name")
+		price := r.FormValue("price")
+		type_id := r.FormValue("type_id")
+		status := r.FormValue("status")
 		dish := entity.Dishes{Did:did, Name:name, Price:price, Type_id:type_id, Status:status}
 
-		log.Println("post dish:", dish)
+		// 获取文件句柄，然后对文件进行存储等处理
+		file, handler, err := r.FormFile("file")
+		if err == nil {
+			defer file.Close()
+			date := time.Now().Format("2006-01-02-15-04-05")
+			path := "I:/WeChatMiniSrc/order/pages/images/dish/" + date + handler.Filename
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0666)
+			if err != nil {
+				log.Println("err", err)
+				return
+			}
+			defer f.Close()
+			io.Copy(f, file)	// 保存文件	
+			path = "../images/dish/" + date + handler.Filename
+			dish.Img.String = path
+			dish.Img.Valid = true
+		}
 
 		var affect int64 = -1
 		if did == "" {
@@ -153,7 +168,7 @@ func dishForm(w http.ResponseWriter, r *http.Request) {
 		} else {
 			affect = dao.UpdateDish(dish)
 		}
-		log.Println("affect:", affect)
+		log.Println("affect:", affect, "post dish:", dish)
 		http.Redirect(w, r, "/dishmanage", http.StatusFound)
 	}
 }

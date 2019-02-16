@@ -19,12 +19,22 @@ func InsertDish(dish entity.Dishes) int64 {
 	checkErr(err)
 	defer db.Close()
 
-	sql := "insert into dishes(name,price,type_id,status) values(?,?,?,?)"
+	var sql_str string
+	if dish.Img.Valid == false {
+		sql_str = "insert into dishes(name,price,type_id,status) values(?,?,?,?)"
+	} else {
+		sql_str = "insert into dishes(name,price,type_id,status,img) values(?,?,?,?,?)"
+	}
 
-	stmt, err := db.Prepare(sql)
+	stmt, err := db.Prepare(sql_str)
 	checkErr(err)
 
-	res, err := stmt.Exec(dish.Name,dish.Price,dish.Type_id,dish.Status)
+	var res sql.Result
+	if dish.Img.Valid == false {
+		res, err = stmt.Exec(dish.Name,dish.Price,dish.Type_id,dish.Status)
+	} else {
+		res, err = stmt.Exec(dish.Name,dish.Price,dish.Type_id,dish.Status, dish.Img.String)
+	}
 	checkErr(err)
 
 	affect, err := res.RowsAffected()

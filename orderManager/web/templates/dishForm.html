@@ -3,25 +3,7 @@
 {{define "dishForm"}}
 
 <div align="center">
-	{{if ne .Dish.Did ""}}
-		<form method="post" action="/uploadfile" enctype="multipart/form-data">
-			<div class="form-group">
-				<label>
-					Did<input type="text" name="did" readonly = "readonly" value="{{.Dish.Did}}">
-				</label>
-		    	<label for="file">上传图片</label>
-		    	<input type="file" id="file" name="file">
-		    	<p class="help-block">上传菜品图片。</p>
-			</div>
-			<div align="center">
-				<button type="submit" class="btn btn-primary">上传图片</button>
-			</div>
-		</form>
-	{{end}}
-
-	<br>
-
-	<form method="post" action="/dishform">
+	<form method="post" action="/dishform" enctype="multipart/form-data">
 		<input type="hidden" name="add" value="{{.Add}}">
 		<table class="table table-bordered table-striped table-hover">
 			{{if ne .Dish.Did ""}}
@@ -78,6 +60,17 @@
 					</select>
 				</td>
 			</tr>
+
+			<tr>
+				<td>菜品图片</td>
+				<td>
+					{{if ne .Dish.Img.Valid false}}
+						<p>路径:{{.Dish.Img.String}}</p>
+					{{end}}
+		    			<input type="file" id="file" name="file">
+				</td>
+			</tr>
+
 			<tr>
 				<td align="center" colspan="2">
 			  		<button type="submit" class="btn btn-primary">提交</button>
