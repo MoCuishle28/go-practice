@@ -4,7 +4,82 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"Go-practice/orderManager/entity"
+	"log"
 )
+
+
+func InsertDishActivity(activity *entity.Dish_activity) int64 {
+	// insert into dish_activity(discount,work,created_time,end_time) values('','','','')
+	if activity.Created_time == "" || activity.End_time=="" || activity.Work==""{
+		log.Println("优惠信息未填写完整")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	var sql_str string
+	if activity.Discount.Valid {
+		sql_str = "insert into dish_activity(did,created_time,end_time,work,discount) values(?,?,?,?,?)"
+	} else if activity.Minus_price.Valid {
+		sql_str = "insert into dish_activity(did,created_time,end_time,work,minus_price) values(?,?,?,?,?)"
+	}
+
+	stmt, err := db.Prepare(sql_str)
+	checkErr(err)
+
+	var res sql.Result
+	if activity.Discount.Valid {
+		res, err = stmt.Exec(activity.Did,activity.Created_time,activity.End_time,activity.Work,activity.Discount.String)
+	} else if activity.Minus_price.Valid {
+		res, err = stmt.Exec(activity.Did,activity.Created_time,activity.End_time,activity.Work,activity.Minus_price.String)
+	}
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
+
+
+func InsertOrderActivity(activity *entity.Order_activity) int64 {
+	// insert into order_activity(discount,work,created_time,end_time) values('','','','')
+	if activity.Created_time == "" || activity.End_time=="" || activity.Work==""{
+		log.Println("优惠信息未填写完整")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	var sql_str string
+	if activity.Discount.Valid {
+		sql_str = "insert into order_activity(created_time,end_time,work,discount) values(?,?,?,?)"
+	} else if activity.Full_minus.Valid {
+		sql_str = "insert into order_activity(created_time,end_time,work,full_minus) values(?,?,?,?)"
+	} else if activity.Full_give.Valid {
+		sql_str = "insert into order_activity(created_time,end_time,work,full_give) values(?,?,?,?)"
+	}
+
+	stmt, err := db.Prepare(sql_str)
+	checkErr(err)
+
+	var res sql.Result
+	if activity.Discount.Valid {
+		res, err = stmt.Exec(activity.Created_time,activity.End_time,activity.Work,activity.Discount.String)
+	} else if activity.Full_minus.Valid {
+		res, err = stmt.Exec(activity.Created_time,activity.End_time,activity.Work,activity.Full_minus.String)
+	} else if activity.Full_give.Valid {
+		res, err = stmt.Exec(activity.Created_time,activity.End_time,activity.Work,activity.Full_give.String)
+	}
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
 
 
 func QueryDishActivity() *[]entity.Dish_activity {

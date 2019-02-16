@@ -54,6 +54,7 @@ type DishManage struct {
 type ActivityManage struct {
 	Dish_activity_list *[]entity.Dish_activity
 	Order_activity_list *[]entity.Order_activity
+	Dishes_list *[]entity.Dishes
 }
 
 type DishFrom struct {
@@ -86,6 +87,8 @@ func main() {
 	http.HandleFunc("/cancelorder", cancelOrder)
 	http.HandleFunc("/minusdishesorders", minusDish_in_Order)
 	http.HandleFunc("/dishform", dishForm)
+	http.HandleFunc("/addorderactivity", addOrderActivity)
+	http.HandleFunc("/adddishactivity", addDishActivity)
 
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
@@ -110,6 +113,38 @@ func index(w http.ResponseWriter, r *http.Request) {
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
+}
+
+
+func addDishActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+	
+	if r.Method == "POST" {
+		status := service.AddDishActivity(r)
+		log.Println("status:", status)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
+}
+
+
+func addOrderActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "POST" {
+		status := service.AddOrderActivity(r)
+		log.Println("status:", status)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
 }
 
 
@@ -247,8 +282,9 @@ func activity(w http.ResponseWriter, r *http.Request) {
 
 	dish_activity_list := dao.QueryDishActivity()
 	order_activity_list := dao.QueryOrderActivity()
+	dishes_list := dao.QueryDsihes()
 	header := Header{Username:root.username, Index:"1"}
-	activity := ActivityManage{Dish_activity_list:dish_activity_list, Order_activity_list:order_activity_list}
+	activity := ActivityManage{Dish_activity_list:dish_activity_list, Order_activity_list:order_activity_list, Dishes_list:dishes_list}
 
 	t, _ := template.ParseFiles("templates/activityManage.html", "templates/header.html")
 	t.ExecuteTemplate(w, "header", header)

@@ -140,11 +140,112 @@
 		</div>
 
 		<div role="tabpanel" class="tab-pane" id="addorderactivity">
-			<p>订单优惠</p>
+			<form action="/addorderactivity" method="post">
+				<table class="table table-bordered table-striped table-hover">
+					<tr>
+						<td>折扣</td>
+						<td>
+							<label for="discount_full">满</label>
+							<input id="discount_full" type="text" name="discount_full">
+							<label for="discount">折扣</label>
+							<input id="discount" type="text" name="discount">
+						</td>
+					</tr>
+
+					<tr>
+						<td>满减</td>
+						<td>
+							<label for="cost_full_0">满</label>
+							<input id="cost_full_0" type="text" name="cost_full_0">
+							<label for="minus">减价</label>
+							<input id="minus" type="text" name="minus">
+						</td>
+					</tr>
+
+					<tr>
+						<td>满赠</td>
+						<td>
+							<label for="cost_full_1">满</label>
+							<input id="cost_full_1" type="text" name="cost_full_1">
+							<label for="give">赠</label>
+							<select id="give">
+								{{range .Dishes_list}}
+									{{if ne .Did ""}}
+										<option value="{{.Did}}">{{.Name}}</option>
+									{{end}}
+								{{end}}
+							</select>
+						</td>
+					</tr>
+
+					<tr>
+						<td>时间</td>
+						<td>
+							<label for="start">开始时间</label>
+							<input type="date" name="start_time">
+							<label for="end">结束时间</label>
+							<input type="date" name="end_time">
+						</td>
+					</tr>
+
+					<tr>
+						<td align="center" colspan="2">
+					  		<button type="submit" class="btn btn-primary">添加</button>
+						</td>
+					</tr>
+				</table>
+			</form>
 		</div>
 
 		<div role="tabpanel" class="tab-pane" id="adddishactivity">
-			<p>菜品优惠</p>
+			<form action="/adddishactivity" method="post">
+				<table class="table table-bordered table-striped table-hover">
+					<tr>
+						<td>菜品</td>
+						<td>
+							<select name="did">
+								{{range .Dishes_list}}
+									{{if ne .Did ""}}
+										<option value="{{.Did}}">{{.Name}}</option>
+									{{end}}
+								{{end}}
+							</select>
+						</td>
+					</tr>
+
+					<tr>
+						<td>折扣</td>
+						<td>
+							<label for="discount">折扣</label>
+							<input id="discount" type="text" name="discount">
+						</td>
+					</tr>
+
+					<tr>
+						<td>减价</td>
+						<td>
+							<label for="minus">减价</label>
+							<input id="minus" type="text" name="minus">
+						</td>
+					</tr>
+
+					<tr>
+						<td>时间</td>
+						<td>
+							<label for="start">开始时间</label>
+							<input type="date" name="start_time">
+							<label for="end">结束时间</label>
+							<input type="date" name="end_time">
+						</td>
+					</tr>
+
+					<tr>
+						<td align="center" colspan="2">
+					  		<button type="submit" class="btn btn-primary">添加</button>
+						</td>
+					</tr>
+				</table>
+			</form>
 		</div>
 
 	</div>	
