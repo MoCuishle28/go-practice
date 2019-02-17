@@ -193,3 +193,64 @@ func QueryCurrentOrders() *[]entity.Orders {
 	}
 	return &ret_orders
 }
+
+
+func QueryOrdersByDate(startDate, endDate string) *[]entity.Orders {
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql_str := "select * from orders where created_time<? and created_time>? and finished='1'"
+	rows, err := db.Query(sql_str, endDate, startDate)
+	checkErr(err)
+
+	var oid string
+	var original_cost string
+	var final_cost string
+	var finished string
+	var created_time string
+	var oa_id string
+	var uid string
+	ret_orders := make([]entity.Orders, 10)
+
+	for rows.Next() {
+		err := rows.Scan(&oid, &original_cost, &final_cost, &finished, &created_time, &oa_id, &uid)
+		checkErr(err)
+
+		order := entity.Orders{Oid:oid, Original_cost:original_cost, Final_cost:final_cost,
+			Finished:finished, Created_time:created_time, Oa_id:oa_id, Uid:uid}
+
+		ret_orders = append(ret_orders, order)
+	}
+	return &ret_orders
+}
+
+
+func QueryMinDate() string {
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	rows := db.QueryRow("SELECT min(created_time) FROM orders")
+
+	var created_time string
+	err = rows.Scan(&created_time)
+	checkErr(err)
+	
+	return created_time
+}
+
+
+func QueryMaxDate() string {
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	rows := db.QueryRow("SELECT max(created_time) FROM orders")
+
+	var created_time string
+	err = rows.Scan(&created_time)
+	checkErr(err)
+
+	return created_time
+}

@@ -18,6 +18,9 @@
 
 	<!-- font-awesome图标 -->
 	<link href="/static/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- 引入 echarts.js -->
+    <script src="/static/echarts.common.min.js"></script>
 </head>
 <body>
 
@@ -38,7 +41,7 @@
 					<li><a href="http://127.0.0.1:9090/activity">优惠活动</a></li>
 					<li><a href="http://127.0.0.1:9090/dishmanage">菜品管理</a></li>
 					<li><a href="http://127.0.0.1:9090/ordermanage">订单管理</a></li>
-					<li><a href="#">销售情况</a></li>
+					<li><a href="http://127.0.0.1:9090/salestatus">销售情况</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					{{if eq .Username "null"}}

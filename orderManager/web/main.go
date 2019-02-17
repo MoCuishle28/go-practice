@@ -63,6 +63,17 @@ type DishFrom struct {
 	Add string
 }
 
+type SaleStatus struct {
+	Days []int64
+	DaySales []float64
+	MonthSales []float64
+
+	Year []int64	// 用于下拉框显示
+
+	CurrYear []int64
+	YearSales []float64
+}
+
 
 var root *Root 			// root 用户登录标志
 
@@ -93,6 +104,9 @@ func main() {
 	http.HandleFunc("/startorderactivity", startOrderActivity)
 	http.HandleFunc("/stopdishactivity", stopDsihActivity)
 	http.HandleFunc("/startdishactivity", startDishActivity)
+	http.HandleFunc("/salestatus", saleStatus)
+	http.HandleFunc("/chooseyear", chooseYear)
+	http.HandleFunc("/chooseyearandmonth", chooseYearAndMonth)
 
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
@@ -117,6 +131,98 @@ func index(w http.ResponseWriter, r *http.Request) {
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
+}
+
+
+// 选择某年某月的每日销售量
+func chooseYearAndMonth(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "POST" {
+		r.ParseForm()
+		date := r.Form.Get("date")
+		if date == "" {
+			http.Redirect(w, r, "/salestatus", http.StatusFound)
+			return
+		}
+
+		days, daySales := service.DaySales(date)
+		year_list := service.GetYears()
+		monthsale := service.MonthSales("2019")
+		currYear, yearSales := service.YearSales()
+
+		header := Header{Username:root.username, Index:"4"}
+		sale_status := SaleStatus{Days:*days, DaySales:*daySales, Year:*year_list, MonthSales:*monthsale, CurrYear:*currYear, YearSales:*yearSales}
+		
+		t, _ := template.ParseFiles("templates/saleStatus.html", "templates/header.html")
+		t.ExecuteTemplate(w, "header", header)
+		t.ExecuteTemplate(w, "saleStatus", sale_status)
+	} else {
+		w.Write([]byte("Not Found! 404"))
+	}
+}
+
+
+// 选择某年的的每月销售量
+func chooseYear(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+	
+	if r.Method == "POST" {
+		r.ParseForm()
+		year := r.Form.Get("year")
+		if year == "" {
+			http.Redirect(w, r, "/salestatus", http.StatusFound)
+			return
+		}
+
+		monthsale := service.MonthSales(year)
+		date := year+"-01"
+		days, daySales := service.DaySales(date)
+		year_list := service.GetYears()
+		currYear, yearSales := service.YearSales()
+
+		header := Header{Username:root.username, Index:"4"}
+		sale_status := SaleStatus{MonthSales:*monthsale, Days:*days, DaySales:*daySales, Year:*year_list, CurrYear:*currYear, YearSales:*yearSales}
+
+		t, _ := template.ParseFiles("templates/saleStatus.html", "templates/header.html")
+		t.ExecuteTemplate(w, "header", header)
+		t.ExecuteTemplate(w, "saleStatus", sale_status)
+	}
+}
+
+
+// 销售情况
+func saleStatus(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	date := time.Now().Format("2006-01")
+	days, daySales := service.DaySales(date)
+
+	year := service.GetYears()
+	monthsale := service.MonthSales("2019")
+	currYear, yearSales := service.YearSales()
+
+	header := Header{Username:root.username, Index:"4"}
+	sale_status := SaleStatus{MonthSales:*monthsale, Year:*year, CurrYear:*currYear, YearSales:*yearSales, Days:*days, DaySales:*daySales}
+
+	t, _ := template.ParseFiles("templates/saleStatus.html", "templates/header.html")
+	t.ExecuteTemplate(w, "header", header)
+	t.ExecuteTemplate(w, "saleStatus", sale_status)
 }
 
 
