@@ -73,9 +73,16 @@
 								<td>{{.Created_time}}</td>
 								<td>{{.End_time}}</td>
 								<td>
-									<button class="btn btn-primary">修改</button>
 									{{if eq .Work "1"}}
-										<button class="btn btn-danger">中止</button>
+										<button class="btn btn-danger"
+										onclick="window.location.href = 'http://127.0.0.1:9090/stoporderactivity?id='+{{.Id}}">
+											停止
+										</button>
+									{{else}}
+										<button class="btn btn-danger"
+										onclick="window.location.href = 'http://127.0.0.1:9090/startorderactivity?id='+{{.Id}}">
+											开始
+										</button>
 									{{end}}
 								</td>
 							</tr>
@@ -127,9 +134,16 @@
 								<td>{{.Created_time}}</td>
 								<td>{{.End_time}}</td>
 								<td>
-									<button class="btn btn-primary">修改</button>
 									{{if eq .Work "1"}}
-										<button class="btn btn-danger">中止</button>
+										<button class="btn btn-danger"
+										onclick="window.location.href = 'http://127.0.0.1:9090/stopdishactivity?id='+{{.Id}}">
+											停止
+										</button>
+									{{else}}
+										<button class="btn btn-danger"
+										onclick="window.location.href = 'http://127.0.0.1:9090/startdishactivity?id='+{{.Id}}">
+											开始
+										</button>
 									{{end}}
 								</td>
 							</tr>

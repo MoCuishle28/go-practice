@@ -89,6 +89,10 @@ func main() {
 	http.HandleFunc("/dishform", dishForm)
 	http.HandleFunc("/addorderactivity", addOrderActivity)
 	http.HandleFunc("/adddishactivity", addDishActivity)
+	http.HandleFunc("/stoporderactivity", stopOrderActivity)
+	http.HandleFunc("/startorderactivity", startOrderActivity)
+	http.HandleFunc("/stopdishactivity", stopDsihActivity)
+	http.HandleFunc("/startdishactivity", startDishActivity)
 
 	err := http.ListenAndServe(":9090", nil)	// 设置监听端口
 	if err != nil {
@@ -113,6 +117,78 @@ func index(w http.ResponseWriter, r *http.Request) {
 	index := Index{Orders_list:orders_list}
 	t.ExecuteTemplate(w, "header", header)
 	t.ExecuteTemplate(w, "index", index)
+}
+
+
+func stopOrderActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "GET" {
+		r.ParseForm()
+		id := r.Form.Get("id")
+		affect := dao.UpdateOrderActivityWork("0", id)
+		log.Println("affect:", affect)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
+}
+
+
+func startOrderActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "GET" {
+		r.ParseForm()
+		id := r.Form.Get("id")
+		affect := dao.UpdateOrderActivityWork("1", id)
+		log.Println("affect:", affect)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
+}
+
+
+func stopDsihActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "GET" {
+		r.ParseForm()
+		id := r.Form.Get("id")
+		affect := dao.UpdateDishActivityWork("0", id)
+		log.Println("affect:", affect)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
+}
+
+
+func startDishActivity(w http.ResponseWriter, r *http.Request) {
+	root.lock.Lock()
+	defer root.lock.Unlock()
+	if root.username == "null" {
+		login(w, r)
+		return
+	}
+
+	if r.Method == "GET" {
+		r.ParseForm()
+		id := r.Form.Get("id")
+		affect := dao.UpdateDishActivityWork("1", id)
+		log.Println("affect:", affect)
+		http.Redirect(w, r, "/activity", http.StatusFound)
+	}
 }
 
 

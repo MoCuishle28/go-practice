@@ -5,7 +5,128 @@ import (
 	"database/sql"
 	"Go-practice/orderManager/entity"
 	"log"
+	"strings"
 )
+
+
+func QueryOrderActivityById(id string) *entity.Order_activity {
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	rows, err := db.Query("select * from order_activity where id=?", id)
+	checkErr(err)
+
+	var discount sql.NullString
+	var full_minus sql.NullString
+	var full_give sql.NullString
+	var work string
+	var created_time string
+	var end_time string
+
+	err = rows.Scan(&id, &discount, &full_minus, &full_give, &work, &created_time, &end_time)
+	checkErr(err)
+
+	activity := entity.Order_activity{Id:id, Work:work, Full_minus:full_minus, Discount:discount, Full_give:full_give, Created_time:created_time, End_time:end_time}
+	return &activity
+}
+
+
+func UpdateDishActivityWork(work, id string) int64 {
+	if id == "" || work == ""{
+		log.Println(" ID/Work 不能为空")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql := "update dish_activity set work=? where id = ?"
+	stmt, err := db.Prepare(sql)
+	checkErr(err)
+
+	res, err := stmt.Exec(work, id)
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
+
+
+func UpdateOrderActivityWork(work, id string) int64 {
+	if id == "" || work == ""{
+		log.Println(" ID/Work 不能为空")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql := "update order_activity set work=? where id = ?"
+	stmt, err := db.Prepare(sql)
+	checkErr(err)
+
+	res, err := stmt.Exec(work, id)
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
+
+
+func UpdateOrderActivity(activity *entity.Order_activity) int64 {
+	// update order_activity set work='0' where id=?
+	if activity.Id == "" {
+		log.Println("缺少ID")
+		return -1
+	}
+	db, err := sql.Open("mysql", "test:123456@/wechat_applets?charset=utf8")
+	checkErr(err)
+	defer db.Close()
+
+	sql := "update order_activity set "
+	set_arr := make([]string, 6)
+
+	if activity.Discount.Valid {
+		set_arr = append(set_arr, "discount="+activity.Discount.String)
+	}
+	if activity.Full_minus.Valid {
+		set_arr = append(set_arr, "full_minus="+activity.Full_minus.String)
+	}
+	if activity.Full_give.Valid {
+		set_arr = append(set_arr, "full_give="+activity.Full_give.String)
+	}
+	if activity.Work != "" {
+		set_arr = append(set_arr, "work="+activity.Work)
+	}
+	if activity.Created_time != "" {
+		set_arr = append(set_arr, "created_time="+activity.Created_time)
+	}
+	if activity.End_time != "" {
+		set_arr = append(set_arr, "end_time="+activity.End_time)
+	}
+
+	set_arr = removeZero(set_arr)
+	sql += strings.Join(set_arr, ",")
+	sql += " where id = ?"
+
+	log.Println("SQL: ", sql)
+
+	stmt, err := db.Prepare(sql)
+	checkErr(err)
+
+	res, err := stmt.Exec(activity.Id)
+	checkErr(err)
+
+	affect, err := res.RowsAffected()
+	checkErr(err)
+
+	return affect
+}
 
 
 func InsertDishActivity(activity *entity.Dish_activity) int64 {
