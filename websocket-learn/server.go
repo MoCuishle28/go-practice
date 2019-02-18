@@ -3,7 +3,9 @@ package main
 import (
 	"net/http"
 	"github.com/gorilla/websocket"
+	"Go-practice/websocket-learn/impl"
 	"fmt"
+	"time"
 )
 
 var (
@@ -24,25 +26,39 @@ func main() {
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
-		conn *websocket.Conn
+		wsConn *websocket.Conn
 		err error
 		data []byte
+		conn *impl.Connection
 	)
+	// defer conn.Close()	// 这里会导致空指针错误?
+
 	// 完成握手应答 第三个参数是 	responseHandler
-	if conn,err = upgrader.Upgrade(w, r, nil); err != nil {
+	if wsConn,err = upgrader.Upgrade(w, r, nil); err != nil {
 		return
 	}
-	defer conn.Close()
 
-	// 得到 websocket.Conn 长连接
+	if conn,err = impl.InitConnection(wsConn); err!=nil {
+		return
+	}
+
+	// 为了演示线程安全
+	go func() {
+		for{
+			if err := conn.WriteMessage([]byte("heartbeat")); err != nil {
+				return
+			}
+			time.Sleep(2*time.Second)	// 每秒发一个心跳消息给客户端
+		}
+	}()
+
 	for {
-		// 能传 Text, Binary 两种类型
-		if _, data, err = conn.ReadMessage(); err != nil {
+		if data,err = conn.ReadMessage(); err != nil {
 			return
 		}
-		if err = conn.WriteMessage(websocket.TextMessage, data); err!=nil {
+		if err = conn.WriteMessage(data); err != nil {
 			return
 		}
-		fmt.Println(data, " string:", string(data))
+		fmt.Println("data:", string(data))
 	}
 }
