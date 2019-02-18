@@ -18,9 +18,9 @@
 	<div class="tab-content">
 		<div role="tabpanel" class="tab-pane active" id="deal">
 			<div align="right" style="margin-right: 50px">
-				<form action="/chooseyearandmonth" method="post">
+				<form action="/salestatus" method="post">
 					<label for="year">选择月份
-						<input type="month" name="date">
+						<input type="month" name="date" value="{{.ActiveDate}}">
 					</label>
 					<button type="submit" class="btn btn-primary">查询</button>
 				</form>
@@ -29,11 +29,16 @@
 
 			<hr>
 			<div align="right" style="margin-right: 50px">
-				<form action="/chooseyear" method="post">
+				<form action="/salestatus" method="post">
 					<label for="year">选择年份
 						<select name="year" id="year">
-							{{range .Year}}
-								<option value="{{.}}">{{.}}</option>
+							{{$activeYear := .ActiveYear}}
+							{{range .Year_list}}
+								{{if eq . $activeYear}}
+									<option value="{{.}}" selected="selected">{{.}}</option>
+								{{else}}
+									<option value="{{.}}">{{.}}</option>
+								{{end}}
 							{{end}}
 						</select>
 					</label>
@@ -49,6 +54,7 @@
 		<div role="tabpanel" class="tab-pane" id="dishsales">
 			<!-- 菜品销量 画南丁格尔图 看每个菜占总销量的比例 -->
 			<!-- 柱状图 看每个菜历史销量 -->
+			<div id="perdishrate" style="width: 1200px;height: 400px"></div>
 		</div>
 
 	</div>	
@@ -61,12 +67,90 @@
     var per_month = echarts.init(document.getElementById('premonth'));
     var per_year = echarts.init(document.getElementById('preyear'));
 
+    var per_dish_rate = echarts.init(document.getElementById("perdishrate"))
+
     var days = {{.Days}}
     var day_sales = {{.DaySales}}
     var month = ["1","2","3","4","5","6","7","8","9","10","11","12"];
     var month_sales = {{.MonthSales}};
     var year = {{.CurrYear}};
     var year_sales = {{.YearSales}};
+
+    var dish_salesNum_tmp = {{.DishSaleNum_list}}
+    var dish_salesNumData = []
+    for (var i = dish_salesNum_tmp.length - 1; i >= 0; i--) {
+    	if (dish_salesNum_tmp[i].Name != "") {
+    		dish_salesNumData.push({
+    			"name":dish_salesNum_tmp[i].Name,
+    			"value":dish_salesNum_tmp[i].Value
+    		})
+    	}
+    }
+    console.log(dish_salesNumData)
+
+    var per_dish_rate_option = {
+	    backgroundColor: '#2c343c',
+	    title: {
+	        text: '各个菜品占总销量比例',
+	        left: 'center',
+	        top: 20,
+	        textStyle: {
+	            color: '#ccc'
+	        }
+	    },
+	    tooltip : {
+	        trigger: 'item',
+	        formatter: "{a} <br/>{b} : {c} ({d}%)"
+	    },
+	    visualMap: {
+	        show: false,
+	        min: 80,
+	        max: 600,
+	        inRange: {
+	            colorLightness: [0, 1]
+	        }
+	    },
+	    series : [
+	        {
+	            name:'菜品售出/份',
+	            type:'pie',
+	            radius : '55%',
+	            center: ['50%', '50%'],
+	            data:dish_salesNumData.sort(function (a, b) { return a.value - b.value; }),
+	            roseType: 'radius',
+	            label: {
+	                normal: {
+	                    textStyle: {
+	                        color: 'rgba(255, 255, 255, 0.3)'
+	                    }
+	                }
+	            },
+	            labelLine: {
+	                normal: {
+	                    lineStyle: {
+	                        color: 'rgba(255, 255, 255, 0.3)'
+	                    },
+	                    smooth: 0.2,
+	                    length: 10,
+	                    length2: 20
+	                }
+	            },
+	            itemStyle: {
+	                normal: {
+	                    color: '#c23531',
+	                    shadowBlur: 200,
+	                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+	                }
+	            },
+	            animationType: 'scale',
+	            animationEasing: 'elasticOut',
+	            animationDelay: function (idx) {
+	                return Math.random() * 200;
+	            }
+	        }
+	    ]
+	};
+	per_dish_rate.setOption(per_dish_rate_option)
 
     var day_option = {
     	title: {

@@ -27,7 +27,7 @@ func MinusDish_in_Order(oid, did string) int64 {
 	// 计算减一后的原始总价
 	var original_cost float64 = 0.0
 	for _, v := range *dishes_orders_list {
-		for  i := 0; int8(i) < v.Num; i++ {
+		for  i := 0; int64(i) < v.Num; i++ {
 			cost, _ := strconv.ParseFloat(v.Price, 64)
 			original_cost += cost
 		}

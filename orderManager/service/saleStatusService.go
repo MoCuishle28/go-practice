@@ -2,11 +2,10 @@ package service
 
 import (
 	"Go-practice/orderManager/dao"
-	_ "Go-practice/orderManager/entity"
+	"Go-practice/orderManager/entity"
 	"Go-practice/orderManager/util"
 	"strings"
 	"strconv"
-	"log"
 )
 
 
@@ -83,7 +82,6 @@ func MonthSales(year string) *[]float64 {
 		final_cost, _ := strconv.ParseFloat(v.Final_cost, 64)
 		monthSlaes[month-1] += final_cost
 	}
-	log.Println("return month sales: ", monthSlaes)
 	return &monthSlaes
 }
 
@@ -122,6 +120,18 @@ func YearSales() (*[]int64, *[]float64) {
 		yearSales[year_index_map[int(year)]] += final_cost
 	}
 
-	log.Println("return years and year sales: ", currYear, yearSales)
 	return &currYear, &yearSales
+}
+
+
+func GetDishSaleNum() *[]entity.DishSaleNum {
+	dishes_orders_list := dao.QueryDishSalesNum()
+	dishSaleNum_list := make([]entity.DishSaleNum, 5)
+	for _, v := range *dishes_orders_list {
+		if v.Name == "" {
+			continue
+		}
+		dishSaleNum_list = append(dishSaleNum_list, entity.DishSaleNum{Name:v.Name, Value:v.Num})
+	}
+	return &dishSaleNum_list
 }

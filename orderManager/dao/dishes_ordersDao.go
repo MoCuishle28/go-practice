@@ -65,7 +65,7 @@ func QueryDishes_OrdersByOid(oid string) *[]entity.Dishes_orders {
 	checkErr(err)
 
 	var did string
-	var num int8
+	var num int64
 	var price string
 	ret := make([]entity.Dishes_orders, 5)
 
@@ -87,7 +87,7 @@ func QueryDishes_OrdersByOidAndDid(oid, did string) entity.Dishes_orders {
 
 	row := db.QueryRow("SELECT num FROM dishes_orders where did=? and oid=?", did, oid)
 
-	var num int8
+	var num int64
 	err = row.Scan(&num)
 	checkErr(err)
 
