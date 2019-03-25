@@ -23,7 +23,7 @@ func blockchainGetHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, error.Error(), http.StatusInternalServerError)
 		return
 	}
-	io.WriteString(w, string(bytes))	// 这样就可以返回？
+	io.WriteString(w, string(bytes))	// 这样就可以返回
 }
 
 func blockchainWriteHandle(w http.ResponseWriter, r *http.Request) {
