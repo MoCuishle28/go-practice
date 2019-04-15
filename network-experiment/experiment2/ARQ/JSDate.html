@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+
+<script type="text/javascript">
+	function after() {
+		
+	}
+
+	var curr = Date();
+	console.log(curr)
+	
+	setTimeout(after(), 99000)
+
+	var end = Date()
+	console.log(end)
+	console.log("相差:", Date.parse(end) - Date.parse(curr))
+	console.log(end > curr)
+</script>
+
+</body>
+</html>

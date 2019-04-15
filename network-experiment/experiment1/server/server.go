@@ -72,7 +72,12 @@ func handleClient(conn net.Conn, userID int64) {
 
 func WriteFile(conn net.Conn, filename string) {
 	file, err := os.Open(filename)
-	checkError(err)
+	if err != nil {
+		fmt.Println("not found! ", filename)
+		conn.Write([]byte("@404"))
+		return
+	}
+	// checkError(err)
 	defer file.Close()
 
 	buff := make([]byte, 2048)

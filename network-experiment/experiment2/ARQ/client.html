@@ -22,7 +22,7 @@
                 ws = new WebSocket("ws://localhost:7777/ws");
 
                 ws.onopen = function(evt) {
-                    print("OPEN");
+                    print("Connect");
                 }
 
                 ws.onclose = function(evt) {
@@ -31,7 +31,14 @@
                 }
 
                 ws.onmessage = function(evt) {
-                    print("RESPONSE: " + evt.data);
+                    console.log("recv", evt.data);
+                    var num = Math.round(Math.random()*100);
+                    if (num <= 50) {
+                        print("Recv: " + evt.data);
+                        ws.send("ack");
+                    } else {
+                        print("数据错误/超时...")
+                    }
                 }
 
                 ws.onerror = function(evt) {
@@ -63,17 +70,14 @@
 </head>
 <body>
 <table>
-    <tr><td valign="top" width="50%">
-        <p>Click "Open" to create a connection to the server,
-            "Send" to send a message to the server and "Close" to close the connection.
-            You can change the message and send multiple times.
-        </p>
-        <form>
-            <button id="open">Open</button>
-            <button id="close">Close</button>
-            <input id="input" type="text" value="Hello world!">
-            <button id="send">Send</button>
-        </form>
+    <tr>
+        <td valign="top" width="50%">
+            <form>
+                <button id="open">Connect</button>
+                <button id="close">Close</button>
+                <input id="input" type="text" value="Hello world!">
+                <button id="send">Send</button>
+            </form>
         </td>
         <td valign="top" width="50%">
             <div id="output"></div>

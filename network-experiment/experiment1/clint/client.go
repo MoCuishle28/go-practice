@@ -13,8 +13,13 @@ import (
 
 func main() {
 	input := bufio.NewScanner(os.Stdin)
+	
+	fmt.Print("请输入连接IP:")
+	input.Scan()
 
-	ip := "127.0.0.1:1200"
+	// ip := "127.0.0.1:1200"
+	ip := input.Text()
+
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", ip)		// 转换为 TCPAddr
 	checkError(err)
 
@@ -74,6 +79,9 @@ func getFile(conn net.Conn, buff *string) {
 			_, err = file.Write([]byte( strings.Replace(*buff, "@EOF", "", 1) ) )
 			checkError(err)	
 			break
+		} else if strings.Contains(*buff, "@404") {
+			fmt.Println("not found 404!")
+			return
 		}
 		_, err = file.Write([]byte(*buff))
 		checkError(err)
