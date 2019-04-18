@@ -23,9 +23,8 @@ var (
 )
 
 
-func recvACK(conn *impl.Connection, signal chan int, msgFrameArray []byte) {
+func recvACK(conn *impl.Connection, signal chan int, msgFrameArray []byte, index *int) {
 	var recvIndex int = 0
-	index := 0
 	size := len(msgFrameArray)
 
 	for {
@@ -33,10 +32,10 @@ func recvACK(conn *impl.Connection, signal chan int, msgFrameArray []byte) {
 			fmt.Println("recv error!")
 			return
 		}
-		fmt.Println("ack", index, string(msgFrameArray[recvIndex]))
+		*index = -(*index) + 1
+		fmt.Println("ack", *index, string(msgFrameArray[recvIndex]))
 		signal <- recvIndex
 		recvIndex++
-		index = -index + 1
 		if size == recvIndex {
 			break
 		}
@@ -44,7 +43,7 @@ func recvACK(conn *impl.Connection, signal chan int, msgFrameArray []byte) {
 }
 
 
-func sendFrame(conn *impl.Connection, signal chan int, msgFrameArray []byte) {
+func sendFrame(conn *impl.Connection, signal chan int, msgFrameArray []byte, index *int) {
 	timer := time.NewTimer(3*time.Second)
 
 	sendBytes := make([]byte, 1)
@@ -61,7 +60,7 @@ func sendFrame(conn *impl.Connection, signal chan int, msgFrameArray []byte) {
 			fmt.Println("send error!")
 			return
 		}
-		fmt.Println("send: ", string(sendBytes[0]))
+		fmt.Println("send: ", string(sendBytes[0]), " ", *index)
 
 		select {
 
@@ -106,9 +105,9 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		msgFrameArray := []byte(msg)
 		fmt.Println("Send Msg Frame Array: ", msgFrameArray)
-
-		go sendFrame(conn, signal, msgFrameArray)
-		go recvACK(conn, signal, msgFrameArray)
+		index := 0
+		go sendFrame(conn, signal, msgFrameArray, &index)
+		go recvACK(conn, signal, msgFrameArray, &index)
 	}
 	fmt.Println("close...")
 }

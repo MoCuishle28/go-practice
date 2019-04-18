@@ -63,19 +63,21 @@ func SendMsg(conn net.Conn, input *bufio.Scanner, signal chan int, closeSignal c
 			return
 		} else {
 			currIndex := 0
-			go RecvACK(conn, signal, command, &currIndex)	// 读取数据
-			go SendFrame(conn, command, signal, &currIndex)
+			index := 0
+			go RecvACK(conn, signal, command, &currIndex, &index)	// 读取数据
+			go SendFrame(conn, command, signal, &currIndex, &index)
 		}
 	}
 }
 
 
-func SendFrame(conn net.Conn, msg string, signal chan int, currIndex *int) {
+func SendFrame(conn net.Conn, msg string, signal chan int, currIndex *int, index *int) {
 	msgBytes := []byte(msg)
-	sendBytes := make([]byte, 1)
+	sendBytes := make([]byte, 2)
 
 	sendBytes[0] = msgBytes[*currIndex]
 	conn.Write(sendBytes)
+	fmt.Println("send: ", string(msg[*currIndex]), " ", *index)
 	for {
 		<-signal
 		if *currIndex == len(msgBytes) {
@@ -83,22 +85,22 @@ func SendFrame(conn net.Conn, msg string, signal chan int, currIndex *int) {
 		}
 
 		sendBytes[0] = msgBytes[*currIndex]
-		fmt.Println("send: ", string(msg[*currIndex]))
+		sendBytes[1] = byte(*index)
+		fmt.Println("send: ", string(msg[*currIndex]), " ", *index)
 		conn.Write(sendBytes)
 	}
 }
 
 
-func RecvACK(conn net.Conn, signal chan int, msg string, currIndex *int) {
+func RecvACK(conn net.Conn, signal chan int, msg string, currIndex *int, index *int) {
 	readBuff := make([]byte, 1024)
-	index := 1
 	for {
 		size, err := conn.Read(readBuff)
 		checkError(err)
 
 		buff := string(readBuff[:size])
-		index = -index + 1
-		fmt.Println(strings.TrimSpace(buff), " ", index, " ", string(msg[*currIndex]))
+		*index = -(*index) + 1
+		fmt.Println(strings.TrimSpace(buff), " ", *index, " ", string(msg[*currIndex]))
 		(*currIndex)++
 		signal<-1
 		if *currIndex == len(msg) {

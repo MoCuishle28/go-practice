@@ -49,7 +49,8 @@ func RecvMsg(conn net.Conn, userID int64) {
 		size, err := conn.Read(request)		// 读取客户发来的信息到 request 中
 		checkError(err)
 
-		command := string(request[:size])
+		command := string(request[:size-1])
+		i := request[size-1]
 
 		if len(command) >= 3 && command[:3] == "exi" {
 			return
@@ -58,8 +59,14 @@ func RecvMsg(conn net.Conn, userID int64) {
 			if num < 50 {
 				fmt.Println("数据帧 丢失/出错... ", strings.TrimSpace("Recv:"+command))
 			} else {
-				fmt.Println("ID:", userID, " ", strings.TrimSpace("Recv:"+command))
-				conn.Write([]byte("ACK"))
+				fmt.Println("ID:", userID, " ", strings.TrimSpace("Recv:"+command), " ", i)
+				ack := "ACK"
+				if i == 0 {
+					ack += "1"
+				} else {
+					ack += "0"
+				}
+				conn.Write([]byte(ack))
 			}
 		}
 		request = make([]byte, 128)
