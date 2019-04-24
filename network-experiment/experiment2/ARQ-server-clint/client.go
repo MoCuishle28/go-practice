@@ -7,6 +7,7 @@ import (
 	"net"
 	"fmt"
 	"strings"
+	"strconv"
 	"time"
 )
 
@@ -57,6 +58,7 @@ func SendMsg(conn net.Conn, input *bufio.Scanner, signal chan int, closeSignal c
 		input.Scan()
 		command := input.Text()
 		if command == "exi" {
+			fmt.Println("bye!")
 			_, err := conn.Write([]byte(command))
 			checkError(err)
 			closeSignal<-1
@@ -99,12 +101,17 @@ func RecvACK(conn net.Conn, signal chan int, msg string, currIndex *int, index *
 		checkError(err)
 
 		buff := string(readBuff[:size])
-		*index = -(*index) + 1
-		fmt.Println(strings.TrimSpace(buff), " ", *index, " ", string(msg[*currIndex]))
-		(*currIndex)++
-		signal<-1
-		if *currIndex == len(msg) {
-			break
+		i, _ := strconv.ParseInt(string(buff[size-1]), 0, 0)
+		if int(i) == -(*index) + 1 {	// 成功收到ACK
+			*index = -(*index) + 1
+			fmt.Println(strings.TrimSpace(buff), " ", *index, " ", string(msg[*currIndex]))
+			(*currIndex)++
+			signal<-1
+			if *currIndex == len(msg) {
+				break
+			}
+		} else { // 收到迟到ACK
+			fmt.Println("迟到ACK: ", strings.TrimSpace(buff), " ", *index, " currSend:", string(msg[*currIndex]))
 		}
 		readBuff = make([]byte, 1024)
 	}
