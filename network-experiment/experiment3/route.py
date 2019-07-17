@@ -56,14 +56,45 @@ def main():
 		for _, item in route.table.items():
 			tmp = [item.target, item.distance, item.nextJump]
 			table.append(','.join(tmp))
+		table.append(route.name)
 		for name in route.near_routes:
 			table[0] = name
-			table.append(route.name)
-			s.send(';'.join(table).encode('utf-8'))
-			table.pop()
+			fragement = ';'.join(table)+"EOF"
+			s.send(fragement.encode('utf-8'))
 
-		data = s.recv(4096).decode('utf-8').split(";")
-		data.pop(0)
-		print(data)
+		# 可能同时受到多个route发来的表 以EOF为分割
+		data = s.recv(4096).decode('utf-8').split("EOF")
+		data.remove('')
+		# print(data)
+
+		# 修改路由表
+		for form in data:
+			form = form.split(";")
+			form.pop(0)
+			source_route = form.pop()
+			for x in form:
+				x = x.split(',')	# 0->目的网络, 1->距离, 2->下一跳
+				x[-1] = source_route
+				x[1] = str(int(x[1]) + 1)
+
+				# 和当前路由表比对
+				if x[0] not in route.table:		# 若不存在目的网络
+					route.table[x[0]] = Item(x[0], x[1], x[2])
+					change = True
+				else:
+					item = route.table[x[0]]
+					if item.nextJump == x[2]:	# 若下一跳相同
+						route.table[x[0]] = Item(x[0], x[1], x[2])
+						change = True
+					else:						# 若下一跳不同
+						if int(item.distance) <= int(x[1]):
+							route.table[x[0]] = item
+						else:
+							route.table[x[0]] = Item(x[0], x[1], x[2])
+							change = True
+
+		for _, item in route.table.items():
+			print(item)
+		print("----END----")
 
 main()
