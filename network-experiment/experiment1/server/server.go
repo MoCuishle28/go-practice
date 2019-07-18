@@ -26,7 +26,7 @@ func main() {
 			continue
 		}
 		fmt.Println("Accept user:", userID, "...")
-		go handleClient(conn, userID)
+		go handleClient(conn, userID)	// 启动一个新的协程处理请求, handleClient函数写具体处理逻辑。
 		userID++
 	}
 }

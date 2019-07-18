@@ -57,17 +57,17 @@ func SendMsg(conn net.Conn, input *bufio.Scanner, signal chan int, closeSignal c
 	for {
 		input.Scan()
 		command := input.Text()
-		if command == "exi" {
+		if command == "exi" {	// 输入exi时断开请求连接
 			fmt.Println("bye!")
 			_, err := conn.Write([]byte(command))
 			checkError(err)
-			closeSignal<-1
+			closeSignal<-1		// 通过通道closeSignal通知主线程结束程序
 			return
 		} else {
 			currIndex := 0
 			index := 0
 			go RecvACK(conn, signal, command, &currIndex, &index)	// 读取数据
-			go SendFrame(conn, command, signal, &currIndex, &index)
+			go SendFrame(conn, command, signal, &currIndex, &index)	// 发送数据帧
 		}
 	}
 }
