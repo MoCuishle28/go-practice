@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>我的vlog</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="http://g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+    <link rel="stylesheet" href="http://g.alicdn.com/msui/sm/0.6.2/css/sm-extend.min.css">
+
+  </head>
+<body>
+
+<div class="page-group">
+	<div class="page page-current">
+		<header class="bar bar-nav">
+			<h1 class="title">vlog</h1>
+		</header>
+
+		<div class="content" id="contentMP4">
+			
+		</div>
+
+		<div class="bar bar-tab">
+			<div class="row">
+				<div class="col-50">
+					<a onclick="getList()" href="" class="button button-big button-fill">我的</a>
+				</div>
+				<div class="col-50">
+		            <form id="signupListImportForm" enctype="multipart/form-data">
+        		    	<!-- 当input标签发生变化的时候 调用uploadFile函数 -->
+        		    	<input type="file" id="btn_file" style="display:none" name="uploadFiles" onchange="uploadFile()">
+            		</form>
+					<a onclick="selectFile()" class="button button-big button-fill">上传</a>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script type="text/javascript">
+	window.onload = function() {
+		// 每次打开页面调用这个函数
+		getList();
+	}
+	function getList() {
+		// 有三个参数
+		$.getJSON(
+			"http://127.0.0.1:8090/api/list",		// url地址
+			null,									// 请求参数
+			// 处理请求结果的函数
+			function(result){
+				var testDiv = document.getElementById("contentMP4");
+				testDiv.innerHTML = "" 		// 通过这个属性动态改变div内容
+				for (var i = 0; i < result.length; i++) {
+					// 获取json内容
+					testDiv.innerHTML += `
+						<div class="card">
+							<div class="card-content">
+								<div class="card-content-inner">
+									<video controls="controls" preload="auto" width="100%" height="100%">
+										<source src=`+ result[i] +` type="video/mp4">
+									</video>
+								</div>
+							</div>
+						</div>
+					`
+				}
+			}
+			);
+	}
+
+	// 选择文件的函数
+	function selectFile() {
+		// 选择文件时 触发了更新form表单中的file
+    	var file = document.getElementById("btn_file").click(); 
+    }
+
+	// 实现表单提交（文件上传）
+	function uploadFile() { 
+        var file = document.getElementById("btn_file").files[0]; 	// 获取表单内容
+        var formData = new FormData();
+        formData.append("uploadFile", file);
+
+        $.ajax({ 
+			url:"http://127.0.0.1:8090/api/upload", 	//提交地址
+			type:"post", 
+			data:formData, 
+
+			processData:false, 
+			contentType:false, 
+			success:function(res){ 
+				if(res){ 
+				  alert("上传成功！",res); 
+				} 
+				console.log(res); 
+			}
+        })
+      } 
+</script>
+
+<script type='text/javascript' src='http://g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='http://g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='http://g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+
+</body>
+</html>
