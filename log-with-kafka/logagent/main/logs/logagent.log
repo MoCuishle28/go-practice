@@ -1,0 +1,14 @@
+2019/07/28 18:23:10.503 [D]  init kafka succ
+2019/07/28 18:23:10.504 [D]  init success!
+2019/07/28 18:23:14.036 [D]  send succ, pid:0 offset:61 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /foo HTTP/1.0" 200 1530 "-" "KeepAliveClient" "-" - 1.736
+2019/07/28 18:23:14.037 [D]  send succ, pid:0 offset:62 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /bar HTTP/1.0" 200 1025 "-" "KeepAliveClient" "-" - 0.898
+2019/07/28 18:23:14.039 [D]  send succ, pid:0 offset:63 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /bar HTTP/1.0" 200 1025 "-" "KeepAliveClient" "-" - 0.898
+2019/07/28 18:23:16.064 [D]  send succ, pid:0 offset:64 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 825 "-" "KeepAliveClient" "-" - 0.137
+2019/07/28 18:23:16.067 [D]  send succ, pid:0 offset:65 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 1236 "-" "KeepAliveClient" "-" - 0.888
+2019/07/28 18:23:16.072 [D]  send succ, pid:0 offset:66 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 1236 "-" "KeepAliveClient" "-" - 0.888
+2019/07/28 18:23:18.089 [D]  send succ, pid:0 offset:67 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 571 "-" "KeepAliveClient" "-" - 0.819
+2019/07/28 18:23:18.097 [D]  send succ, pid:0 offset:68 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 512 "-" "KeepAliveClient" "-" - 0.304
+2019/07/28 18:23:18.099 [D]  send succ, pid:0 offset:69 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 512 "-" "KeepAliveClient" "-" - 0.304
+2019/07/28 18:23:20.118 [D]  send succ, pid:0 offset:70 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 640 "-" "KeepAliveClient" "-" - 0.634
+2019/07/28 18:23:20.120 [D]  send succ, pid:0 offset:71 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 1028 "-" "KeepAliveClient" "-" - 0.297
+2019/07/28 18:23:20.126 [D]  send succ, pid:0 offset:72 topic:nginx_log data:172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 1028 "-" "KeepAliveClient" "-" - 0.297

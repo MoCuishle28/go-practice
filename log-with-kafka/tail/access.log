@@ -1,0 +1,12 @@
+172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /foo HTTP/1.0" 200 1530 "-" "KeepAliveClient" "-" - 1.736
+172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /bar HTTP/1.0" 200 1025 "-" "KeepAliveClient" "-" - 0.898
+172.0.0.12 - - [28/Jul/2019:18:23:13 +0000] https "GET /bar HTTP/1.0" 200 1025 "-" "KeepAliveClient" "-" - 0.898
+172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 825 "-" "KeepAliveClient" "-" - 0.137
+172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 1236 "-" "KeepAliveClient" "-" - 0.888
+172.0.0.12 - - [28/Jul/2019:18:23:15 +0000] https "GET /bar HTTP/1.0" 200 1236 "-" "KeepAliveClient" "-" - 0.888
+172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 571 "-" "KeepAliveClient" "-" - 0.819
+172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 512 "-" "KeepAliveClient" "-" - 0.304
+172.0.0.12 - - [28/Jul/2019:18:23:17 +0000] https "GET /bar HTTP/1.0" 200 512 "-" "KeepAliveClient" "-" - 0.304
+172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 640 "-" "KeepAliveClient" "-" - 0.634
+172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 1028 "-" "KeepAliveClient" "-" - 0.297
+172.0.0.12 - - [28/Jul/2019:18:23:19 +0000] https "GET /bar HTTP/1.0" 200 1028 "-" "KeepAliveClient" "-" - 0.297

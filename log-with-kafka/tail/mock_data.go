@@ -50,6 +50,6 @@ func main() {
 				log.Println("writeToFile error:", err)
 			}
 		}
-		time.Sleep(time.Millisecond * 200)
+		time.Sleep(time.Second * 2)
 	}
 }
