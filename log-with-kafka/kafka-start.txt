@@ -1,0 +1,12 @@
+启动zookeeper：
+zkserver 
+
+启动kafka：
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
+创建一个topic：nginx_log
+cd I:\tools\kafka\kafka_2.11-2.3.0\bin\windows
+kafka-topics.bat --create --zookeeper localhost:2181/kafka --replication-factor 1 --partitions 1 --topic nginx_log
+另一个能用？：
+cd I:\tools\kafka\kafka_2.11-2.3.0\bin
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic nginx_log --from-beginning

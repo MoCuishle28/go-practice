@@ -1,6 +1,7 @@
 package main
 
 import(
+	"flag"
 	"strings"
 	"fmt"
 	"time"
@@ -11,6 +12,8 @@ import(
 	"log"
 	"strconv"
 	"net/url"
+
+	"github.com/influxdata/influxdb1-client/v2"
 )
 
 
@@ -78,8 +81,53 @@ func (r *ReadFromFile) Read(rc chan []byte) {
 
 func (w *WriteToInfluxDB) Write(wc chan *Message) {
 	// 写入模块
+
+	infSli := strings.Split(w.influxDBDsn, "@")
+
+	// Create a new HTTPClient
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     infSli[0],
+		Username: infSli[1],
+		Password: infSli[2],
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for v := range wc {
-		fmt.Println(v)
+		// Create a new point batch
+		bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+			Database:  infSli[3],	// 指定数据库
+			Precision: infSli[4],	// 精度参数
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Create a point and add to batch
+		// Tags: Path, Method, Scheme, Status
+		tags := map[string]string{"Path": v.Path, "Method": v.Method, "Scheme": v.Scheme, "Status": v.Status}
+		// Fields: UpstreamTime, RequestTime, BytesSent
+		fields := map[string]interface{}{
+			"UpstreamTime": v.UpstreamTime,
+			"RequestTime":  v.RequestTime,
+			"BytesSent":    v.BytesSent,
+		}
+
+		// 表名：nginx_log
+		pt, err := client.NewPoint("nginx_log", tags, fields, v.TimeLocal)
+		if err != nil {
+			log.Fatal(err)	
+		}
+		bp.AddPoint(pt)		
+
+		// 写入influxdb？
+		// Write the batch
+		if err := c.Write(bp); err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("write success!")
 	}
 }
 
@@ -141,12 +189,21 @@ func (l *LogProcess) Process() {
 
 
 func main() {
+	// Grafana Default login and password admin/ admin
+
+	// 通过命令行参数传入
+	var path, influxDsn string
+	flag.StringVar(&path, "path", "./access.log", "read file path")
+	// 地址@用户名@密码@数据库@精度
+	flag.StringVar(&influxDsn, "influxDsn", "http://127.0.0.1:8086@imooc@imoocpass@imooc@s", "influx data source")
+	flag.Parse()
+
 	r := &ReadFromFile{
-		path: "access.log",
+		path: path,
 	}
 
 	w := &WriteToInfluxDB{
-		influxDBDsn: "username&password...",
+		influxDBDsn: influxDsn,
 	}
 
 	lp := &LogProcess{
