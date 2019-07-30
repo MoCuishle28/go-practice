@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+/*
+生成文档:
+go doc 包名
+godoc -http :6060
+*/
+
 
 // interface{}表示支持任何类型
 type Queue []interface{}
