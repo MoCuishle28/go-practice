@@ -6,6 +6,8 @@ import(
 	"os"
 	"io/ioutil"
 	"log"
+	_ "net/http/pprof"	// 用于服务器性能分析  访问 http://127.0.0.1:8888/debug/pprof/ 可以查看性能情况\
+	//  还可以用查看耗时操作 go tool pprof http://127.0.0.1:8888/debug/profile
 )
 
 /*
