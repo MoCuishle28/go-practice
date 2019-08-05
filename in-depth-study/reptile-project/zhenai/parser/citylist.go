@@ -28,7 +28,8 @@ func ParseCityList(contents []byte) engine.ParseResult {
 			ParserFunc: ParseCity,
 		})
 		// fmt.Printf("city:%s, URL:%s\n", m[2], m[1])
-		// 控制一下 只爬取10个城市
+
+		// 控制一下 只爬取5个城市
 		limit--
 		if limit == 0 {
 			break

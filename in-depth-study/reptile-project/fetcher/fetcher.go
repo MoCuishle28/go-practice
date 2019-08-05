@@ -6,6 +6,7 @@ import(
 	"log"
 	"net/http"
 	"io/ioutil"
+	"time"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -14,12 +15,17 @@ import(
 )
 
 
+var rateLimiter = time.Tick(100 * time.Millisecond)
+
 func Fetch(url string) ([]byte, error) {
 	// resp, err := http.Get(url)
 	// if err != nil {
 	// 	return nil, err
 	// }
 	// defer resp.Body.Close()
+
+	// 100毫秒收一个 防止请求过快
+	<-rateLimiter
 
 	// 设置请求头应对403错误
 	client := &http.Client{}
