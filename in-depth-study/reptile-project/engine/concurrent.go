@@ -2,9 +2,7 @@ package engine
 
 
 import(
-	"log"
 
-	// "Go-practice/in-depth-study/reptile-project/fetcher"
 )
 
 
@@ -13,15 +11,21 @@ import(
 type ConcurrentEngine struct {
 	Scheduler Scheduler 	// 调度器 	
 	WorkerCount int 		// 多少个 worker
+	ItemChan chan interface{} 	// 传输要存储 Item 的 chan
 }
 
 
 // 调度器接口
 type Scheduler interface {
+	ReadNotifier
 	Submit(Request)
-	ConfigureMasterWorkerChan(chan Request)
-	WorkerReady(chan Request)
+	WorkerChan() chan Request 		// 由 Scheduler 要 chan （不用自己判断是每人一个chan还是全部共用一个chan）
 	Run()
+}
+
+
+type ReadNotifier interface {
+	WorkerReady(chan Request)
 }
 
 
@@ -31,19 +35,19 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	e.Scheduler.Run()
 
 	for i := 0; i < e.WorkerCount; i++ {
-		createWorker(out, e.Scheduler)
+		createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
 	}
 
 	for _, r := range seeds {
 		e.Scheduler.Submit(r)
 	}
 
-	itemCount := 0
 	for {
 		result := <-out
 		for _, item := range result.Items {
-			log.Printf("Got item #%d: %v\n", itemCount, item)
-			itemCount++
+			go func() {
+				e.ItemChan <- item
+			} ()
 		}
 
 		// 把 item 的 Requests 送给调度器
@@ -54,11 +58,11 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 }
 
 
-func createWorker(out chan ParseResult, s Scheduler) {
-	in := make(chan Request)
+// 抽象出 worker ：包括 Parser 和 Fetcher (输入 Request 处理后输出 Requests、Items)
+func createWorker(in chan Request, out chan ParseResult, ready ReadNotifier) {
 	go func() {
 		for {
-			s.WorkerReady(in)
+			ready.WorkerReady(in)
 			request := <-in
 			result, err := worker(request)
 			if err != nil {

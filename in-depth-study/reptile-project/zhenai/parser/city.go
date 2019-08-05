@@ -18,7 +18,7 @@ func ParseCity(contents []byte) engine.ParseResult {
 	result := engine.ParseResult{}
 	for _, m := range matches {
 		name := string(m[2])	// 要先将 m[2] 拷贝出来，否则下面的函数只会等待调用时再使用引用的最后一个 m[2]
-		result.Items = append(result.Items, "User "+name)
+		// result.Items = append(result.Items, "User "+name)
 		result.Requests = append(result.Requests, engine.Request{
 			Url:		string(m[1]),
 			// 用函数式编程封装 不要修改 types.go 中解析函数的定义

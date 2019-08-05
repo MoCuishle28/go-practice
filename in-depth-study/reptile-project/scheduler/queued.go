@@ -15,6 +15,11 @@ type QueuedScheduler struct {
 }
 
 
+func (s *QueuedScheduler) WorkerChan() chan engine.Request {
+	return make(chan engine.Request)
+}
+
+
 // 将 chan 传入
 func (s *QueuedScheduler) ConfigureMasterWorkerChan(c chan engine.Request) {
 
