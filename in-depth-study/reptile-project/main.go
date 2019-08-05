@@ -5,7 +5,7 @@ import(
 	"Go-practice/in-depth-study/reptile-project/zhenai/parser"
 
 	"Go-practice/in-depth-study/reptile-project/scheduler"
-	
+
 	// "golang.org/x/text/encoding/simplifiedchinese"
 )
 
@@ -19,7 +19,11 @@ func main() {
 
 	// 并发版
 	e := engine.ConcurrentEngine{
-		Scheduler: &scheduler.SimpleScheduler{},
+		// 使用简单调度器
+		// Scheduler: &scheduler.SimpleScheduler{},
+
+		// 使用队列调度器
+		Scheduler: &scheduler.QueuedScheduler{},
 		WorkerCount: 100,
 	}
 

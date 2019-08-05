@@ -16,6 +16,11 @@ var profileRe = regexp.MustCompile(`<div class="des f-cl" data-v-3c42fade>(.+) \
 func ParserProfile(contents []byte, name string) engine.ParseResult {
 	profile := model.Profile{}
 	match := profileRe.FindSubmatch(contents)
+	
+	if len(match) <= 1 {
+		return  engine.ParseResult{}
+	}
+
 	for i, m := range match[1:] {
 		switch i {
 			case 1:
