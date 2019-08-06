@@ -45,6 +45,7 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	for {
 		result := <-out
 		for _, item := range result.Items {
+			// 得到 Items 后尽快送出去
 			go func() {
 				e.ItemChan <- item
 			} ()
