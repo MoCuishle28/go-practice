@@ -26,10 +26,18 @@ func main() {
 	}
 
 	result = 0
-	err = client.Call("DemoService.Div", rpcdemo.Args{10, 0}, &result)
+	err = client.Call("DemoService.Add", rpcdemo.Args{20, 8}, &result)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(result)
+	}
+
+	var retStr string
+	err = client.Call("DemoService.Change", rpcdemo.Args2{"Hello!"}, &retStr)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(retStr)
 	}
 }
