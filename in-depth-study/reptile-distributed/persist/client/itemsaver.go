@@ -27,7 +27,7 @@ func ItemSaver(host string) chan interface{} {
 				log.Printf("saver error:item #%d: %v; error:%v\n", itemCount, item, err)
 				continue
 			}
-			log.Printf("save item #%d: %v; error:%v\n", itemCount, item)
+			log.Printf("save item #%d: %v\n", itemCount, item)
 			itemCount++
 		}
 	} ()

@@ -1,0 +1,16 @@
+2019/08/09 10:09:05.573 [I] [init.go:88]  init logger succ
+2019/08/09 10:09:05.575 [I] [init.go:95]  redis init succ!
+2019/08/09 10:09:05.575 [I] [main.go:18]  init sec succ
+2019/08/09 10:09:05.694 [I] [asm_amd64.s:1333]  http server Running on http://0.0.0.0:9091
+2019/08/09 10:20:15.137 [I] [init.go:88]  init logger succ
+2019/08/09 10:20:15.139 [I] [init.go:95]  redis init succ!
+2019/08/09 10:20:15.139 [I] [main.go:18]  init sec succ
+2019/08/09 10:20:15.248 [I] [asm_amd64.s:1333]  http server Running on http://0.0.0.0:9091
+2019/08/09 10:21:07.966 [I] [init.go:88]  init logger succ
+2019/08/09 10:21:07.968 [I] [init.go:95]  redis init succ!
+2019/08/09 10:21:07.968 [I] [main.go:18]  init sec succ
+2019/08/09 10:21:08.087 [I] [asm_amd64.s:1333]  http server Running on http://0.0.0.0:9091
+2019/08/09 10:22:17.945 [I] [init.go:88]  init logger succ
+2019/08/09 10:22:17.947 [I] [init.go:95]  redis init succ!
+2019/08/09 10:22:17.947 [I] [main.go:18]  init sec succ
+2019/08/09 10:22:18.063 [I] [asm_amd64.s:1333]  http server Running on http://0.0.0.0:9091
