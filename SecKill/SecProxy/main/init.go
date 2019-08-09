@@ -6,6 +6,7 @@ import(
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gomodule/redigo/redis"
+	"Go-practice/SecKill/SecProxy/service"
 )
 
 
@@ -17,13 +18,13 @@ var (
 func initRedis() (err error) {
 	redisPool = &redis.Pool{
 		// 空闲连接数
-		MaxIdle: secKillConf.redisConf.redisMaxIdle,
+		MaxIdle: secKillConf.RedisConf.RedisMaxIdle,
 		// 活跃连接数
-		MaxActive: secKillConf.redisConf.redisMaxActive,
+		MaxActive: secKillConf.RedisConf.RedisMaxActive,
 		// 超时 单位是纳秒的 Duration 类型
-		IdleTimeout: time.Duration(secKillConf.redisConf.redisIdleTimeout) * time.Second,
+		IdleTimeout: time.Duration(secKillConf.RedisConf.RedisIdleTimeout) * time.Second,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", secKillConf.redisConf.redisAddr)
+			return redis.Dial("tcp", secKillConf.RedisConf.RedisAddr)
 		},
 	}
 	// 获取一个链接 检测是否可用
@@ -62,8 +63,8 @@ func convertLogLevel(level string) int {
 
 func initLogger() (err error) {
 	config := make(map[string]interface{})
-	config["filename"] = secKillConf.logPath
-	config["level"] = convertLogLevel(secKillConf.logLevel)
+	config["filename"] = secKillConf.LogPath
+	config["level"] = convertLogLevel(secKillConf.LogLevel)
 
 	configStr, err := json.Marshal(config)
 	if err != nil {
@@ -111,7 +112,7 @@ func initSec() (err error) {
 		return 
 	}
 
-
+	service.InitService(&secKillConf)
 	logs.Info("init sec succ")
 	return
 }

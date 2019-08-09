@@ -7,41 +7,13 @@ import(
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"Go-practice/SecKill/SecProxy/service"
 )
 
 
 var (
-	secKillConf = SecKillConf{}
+	secKillConf = service.SecKillConf{}
 )
-
-
-type RedisConf struct {
-	redisAddr string
-	redisMaxIdle int
-	redisMaxActive int
-	redisIdleTimeout int
-}
-
-
-// 在内存中保存配置
-type SecKillConf struct {
-	redisConf RedisConf
-	etcdAddr string
-	logPath string
-	logLevel string
-	secProductInfo []SecProductInfoConf 	// 秒杀商品信息
-}
-
-
-// json 反序列化必须首字母大写
-type SecProductInfoConf struct {
-	ProductId int64 	 	// 商品ID
-	StartTime int64 		// 抢购开始时间
-	EndTime int64
-	Status int64 			// 抢购状态
-	Total int64 			// 总量
-	Left int64 				// 剩余量
-}
 
 
 func loadSecInfo() (err error) {
@@ -53,18 +25,26 @@ func loadSecInfo() (err error) {
 	total_list := strings.Split(beego.AppConfig.String("total"), ",")
 	left_list := strings.Split(beego.AppConfig.String("left"), ",")
 
-	secKillConf.secProductInfo = make([]SecProductInfoConf, len(productId_list))
-	for i, _ := range secKillConf.secProductInfo {
-		secKillConf.secProductInfo[i].ProductId, _ = strconv.ParseInt(productId_list[i], 10, 64)
-		secKillConf.secProductInfo[i].StartTime, _ = strconv.ParseInt(startTime_list[i], 10, 64)
-		secKillConf.secProductInfo[i].EndTime, _ = strconv.ParseInt(endTime_list[i], 10, 64)
-		secKillConf.secProductInfo[i].Status, _ = strconv.ParseInt(status_list[i], 10, 64)
-		secKillConf.secProductInfo[i].Total, _ = strconv.ParseInt(total_list[i], 10, 64)
-		secKillConf.secProductInfo[i].Left, _ = strconv.ParseInt(left_list[i], 10, 64)
+	secKillConf.SecProductInfoMap = make(map[int64]*service.SecProductInfoConf, len(productId_list))
+	// 初始化加不加锁其实都行 
+	// 不过如果做成实时修改配置的 必须加锁 
+	// 提升性能办法：先不加锁地读取变化数据到临时 map 再加锁地直接赋值 map 给 secProductInfoMap (这样数据量大时，主线程不会一直处于阻塞状态)
+	secKillConf.RwSecProductLock.Lock()
+	for i, id := range productId_list {
+		id, _ := strconv.ParseInt(id, 10, 64)
+		secKillConf.SecProductInfoMap[id] = &service.SecProductInfoConf{}
+		secKillConf.SecProductInfoMap[id].ProductId, _ = strconv.ParseInt(productId_list[i], 10, 64)
+		secKillConf.SecProductInfoMap[id].StartTime, _ = strconv.ParseInt(startTime_list[i], 10, 64)
+		secKillConf.SecProductInfoMap[id].EndTime, _ = strconv.ParseInt(endTime_list[i], 10, 64)
+		secKillConf.SecProductInfoMap[id].Status, _ = strconv.ParseInt(status_list[i], 10, 64)
+		secKillConf.SecProductInfoMap[id].Total, _ = strconv.ParseInt(total_list[i], 10, 64)
+		secKillConf.SecProductInfoMap[id].Left, _ = strconv.ParseInt(left_list[i], 10, 64)
 	}
+	secKillConf.RwSecProductLock.Unlock()
 
-	for _, v := range secKillConf.secProductInfo {
-		fmt.Println("%v", v)
+	fmt.Println("init secProductInfoMap:")
+	for k, v := range secKillConf.SecProductInfoMap {
+		fmt.Printf("%d:%+v\n", k, v)
 	}
 	return
 }
@@ -73,16 +53,16 @@ func loadSecInfo() (err error) {
 // 初始化配置
 func initConfig() (err error) {
 	// 获取 app.config 中的配置项
-	secKillConf.logPath = beego.AppConfig.String("logs_path")
-	secKillConf.logLevel = beego.AppConfig.String("log_level")
+	secKillConf.LogPath = beego.AppConfig.String("logs_path")
+	secKillConf.LogLevel = beego.AppConfig.String("log_level")
 
 	redisAddr := beego.AppConfig.String("redis_addr")
 	etcdAddr := beego.AppConfig.String("etcd_addr")
 	logs.Debug("read config:%v", redisAddr)
 	logs.Debug("read config:%v", etcdAddr)
 
-	secKillConf.redisConf.redisAddr = redisAddr
-	secKillConf.etcdAddr = etcdAddr
+	secKillConf.RedisConf.RedisAddr = redisAddr
+	secKillConf.EtcdAddr = etcdAddr
 
 	if len(redisAddr) == 0 || len(etcdAddr) == 0 {
 		err = fmt.Errorf("init config failed, redis[%s] or etcd[%s] config is null", redisAddr, etcdAddr)
@@ -107,13 +87,13 @@ func initConfig() (err error) {
 		return 
 	}
 
-	secKillConf.redisConf.redisMaxIdle = redisMaxIdle
-	secKillConf.redisConf.redisMaxActive = redisMaxActive
-	secKillConf.redisConf.redisIdleTimeout = redisIdleTimeout
+	secKillConf.RedisConf.RedisMaxIdle = redisMaxIdle
+	secKillConf.RedisConf.RedisMaxActive = redisMaxActive
+	secKillConf.RedisConf.RedisIdleTimeout = redisIdleTimeout
 
 	err = loadSecInfo()
 	if err != nil {
-		err = fmt.Errorf("load secProductInfo failed, err:%v", err)
+		err = fmt.Errorf("load secProductInfoMap failed, err:%v", err)
 		return
 	}
 	return
