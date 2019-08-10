@@ -96,5 +96,14 @@ func initConfig() (err error) {
 		err = fmt.Errorf("load secProductInfoMap failed, err:%v", err)
 		return
 	}
+
+	// 读取密钥
+	secKillConf.CookieSecretKey = beego.AppConfig.String("cookie_secretkey")
+
+	secKillConf.UserSecAccessLimit, err = beego.AppConfig.Int("user_sec_access_limit")
+	if err != nil {
+		err = fmt.Errorf("read user_sec_access_limit failed, err:%v", err)
+		return 
+	}
 	return
 }
