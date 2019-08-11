@@ -1,0 +1,19 @@
+mode: set
+Go-practice/resk/infra/algo/before-shuffle.go:11.47,12.16 1 0
+Go-practice/resk/infra/algo/before-shuffle.go:16.2,21.14 4 0
+Go-practice/resk/infra/algo/before-shuffle.go:24.2,24.35 1 0
+Go-practice/resk/infra/algo/before-shuffle.go:29.2,34.16 4 0
+Go-practice/resk/infra/algo/before-shuffle.go:12.16,14.3 1 0
+Go-practice/resk/infra/algo/before-shuffle.go:21.14,23.3 1 0
+Go-practice/resk/infra/algo/before-shuffle.go:24.35,27.3 2 0
+Go-practice/resk/infra/algo/double-average.go:11.47,12.16 1 1
+Go-practice/resk/infra/algo/double-average.go:16.2,25.10 6 1
+Go-practice/resk/infra/algo/double-average.go:12.16,14.3 1 1
+Go-practice/resk/infra/algo/simple-random.go:16.44,18.16 1 1
+Go-practice/resk/infra/algo/simple-random.go:22.2,27.10 4 1
+Go-practice/resk/infra/algo/simple-random.go:18.16,20.3 1 1
+Go-practice/resk/infra/algo/after-shuffle.go:10.47,15.36 3 1
+Go-practice/resk/infra/algo/after-shuffle.go:22.2,22.40 1 1
+Go-practice/resk/infra/algo/after-shuffle.go:25.2,25.13 1 1
+Go-practice/resk/infra/algo/after-shuffle.go:15.36,19.3 3 1
+Go-practice/resk/infra/algo/after-shuffle.go:22.40,24.3 1 1
